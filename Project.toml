@@ -1,7 +1,7 @@
 name = "SymbolicDiscretizers"
 uuid = "edb0eac7-a3aa-4158-b16d-3faaf99b23a9"
 authors = ["Michael Myers"]
-version = "0.1.0-DEV"
+version = "0.1.0"
 
 [deps]
 Distributions = "31c24e10-a181-5473-b8eb-7969acd0382f"
