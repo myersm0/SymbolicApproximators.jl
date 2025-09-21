@@ -91,18 +91,18 @@ using Test
 	
 	@testset "Distance functions" begin
 		# test that different discretizers have working distance functions
-		data1 = randn(100)
-		data2 = randn(100)
+		data1 = collect(1:100) .+ 0.1
+		data2 = collect(1:100) .* 2.0
 		for disc in [SAX(10, 5), OrdinalDiscretizer(5), DeltaDiscretizer(5)]
 			symbols1 = discretize(disc, data1)
 			symbols2 = discretize(disc, data2)
-			# Distance to self should be 0
+			# distance to self should be 0
 			@test distance(disc, symbols1, symbols1) ≈ 0.0
-			# Distance should be symmetric
+			# distance should be symmetric
 			d12 = distance(disc, symbols1, symbols2)
 			d21 = distance(disc, symbols2, symbols1)
 			@test d12 ≈ d21
-			# Different sequences should have non-zero distance (usually)
+			# different sequences should have non-zero distance (usually)
 			if symbols1 != symbols2
 				@test distance(disc, symbols1, symbols2) > 0.0
 			end
