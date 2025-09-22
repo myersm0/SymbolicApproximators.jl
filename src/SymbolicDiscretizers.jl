@@ -117,26 +117,8 @@ end
 ## helpers
 
 function compute_gaussian_breakpoints(alphabet_size::Int)
-	alphabet_size > 1 || error("alphabet_size must be at least 2")
-	breakpoint_table = Dict(
-		2 => Float64[0.0],
-		3 => [-0.43, 0.43],
-		4 => [-0.67, 0.0, 0.67],
-		5 => [-0.84, -0.25, 0.25, 0.84],
-		6 => [-0.97, -0.43, 0.0, 0.43, 0.97],
-		7 => [-1.07, -0.57, -0.18, 0.18, 0.57, 1.07],
-		8 => [-1.15, -0.67, -0.32, 0.0, 0.32, 0.67, 1.15],
-		9 => [-1.22, -0.76, -0.43, -0.14, 0.14, 0.43, 0.76, 1.22],
-		10 => [-1.28, -0.84, -0.52, -0.25, 0.0, 0.25, 0.52, 0.84, 1.28],
-	)
-	haskey(breakpoint_table, alphabet_size) && return breakpoint_table[alphabet_size]
-	d = Normal(0, 1)
-	breakpoints = Float64[]
-	for i in 1:(alphabet_size-1)
-		prob = i / alphabet_size
-		push!(breakpoints, quantile(d, prob))
-	end
-	return breakpoints
+	 alphabet_size > 1 || error("alphabet_size must be at least 2")
+	 return quantile.(Normal(), (1:(alphabet_size-1)) ./ alphabet_size)
 end
 
 # PAA (Piecewise Aggregate Approximation)
