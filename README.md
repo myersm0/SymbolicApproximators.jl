@@ -1,5 +1,5 @@
 # SymbolicDiscretizers
-A Julia package to transform continuous signals (such as time series) into symbolic representations, while preserving meaningful patterns and distances. This enables the use of string algorithms, suffix trees, pattern matching, and other discrete techniques on continuous data.
+A Julia package to transform continuous signals (such as time series) into symbolic representations, while preserving meaningful patterns and distances.
 
 ** This package is still under development. Check back soon. **
 
