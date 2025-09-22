@@ -5,16 +5,21 @@ using LinearAlgebra
 using Distributions
 using StatsBase
 
-export SymbolicDiscretizer, SAX, OrdinalDiscretizer, DeltaDiscretizer
+abstract type SymbolicDiscretizer end
+export SymbolicDiscretizer
+
 export discretize, reconstruct, distance
-export StreamingDiscretizer, update!, get_symbols
-export build_distance_table, numerosity_reduction
 
 include("utilities.jl")
-include("discretizers.jl")
+export build_distance_table, numerosity_reduction
+
+# main algorithms
+include("sax.jl")
+include("ordinal.jl")
+include("delta.jl")
+export SAX, OrdinalDiscretizer, DeltaDiscretizer
+
 include("windows.jl")
-include("discretize.jl")
-include("distances.jl")
-include("misc.jl")
+export StreamingDiscretizer, update!, get_symbols
 
 end

@@ -1,4 +1,9 @@
 
+function compute_gaussian_breakpoints(alphabet_size)
+	alphabet_size > 1 || error("alphabet_size must be at least 2")
+	return quantile.(Normal(), (1:(alphabet_size-1)) ./ alphabet_size)
+end
+
 function build_distance_table(breakpoints::Vector{Float64})
 	n = length(breakpoints) + 1
 	table = zeros(n, n)
@@ -60,5 +65,41 @@ end
 
 function linspace_bins(start, stop, n)
 	return collect(range(start, stop, length=n+1))[2:end]
+end
+
+function distance(s1::Char, s2::Char, breakpoints::Vector{Float64})
+	s1 == s2 && return 0.0
+	
+	idx1 = Int(s1 - 'a')
+	idx2 = Int(s2 - 'a')
+	
+	abs(idx1 - idx2) > 1 || return 0.0
+	
+	max_idx = max(idx1, idx2)
+	min_idx = min(idx1, idx2)
+	
+	if min_idx == 0
+		low_val = breakpoints[1]
+	else
+		low_val = breakpoints[min_idx]
+	end
+	
+	if max_idx > length(breakpoints)
+		high_val = breakpoints[end]
+	else
+		high_val = breakpoints[max_idx]
+	end
+	
+	return abs(high_val - low_val)
+end
+
+function numerosity_reduction(symbols::Vector{Char})
+	# run-length encoding for consecutive identical symbols
+	vals, lens = rle(symbols)
+	return vals, lens
+end
+
+function expand_numerosity(vals::Vector{Char}, lens::Vector{Int})
+	return inverse_rle(vals, lens)
 end
 
