@@ -1,10 +1,15 @@
 # SymbolicDiscretizers
 A Julia package to transform continuous signals (such as time series) into symbolic representations, while preserving meaningful patterns and distances. This enables the use of string algorithms, suffix trees, pattern matching, and other discrete techniques on continuous data.
 
+** This package is still under development. Check back soon. **
+
 In particular we implement the following algorithms:
 - Symbolic Aggregate approXimation (SAX) ([Lin et al 2003](https://www.cs.ucr.edu/~eamonn/SAX.pdf))
+- Extended SAX (ESAX) (Lkhagva et al 2006)
+- Indexable SAX (iSAX) ([Shieh et al 2008](https://www.cs.ucr.edu/~eamonn/iSAX.pdf))
+- Trend Feature SAX (TFSAX) ([Yu et al 2019](https://arxiv.org/abs/1905.00421)
 - ordinal patterns ([Bandt & Pompe 2002](https://pubmed.ncbi.nlm.nih.gov/12005759/))
-- delta encodings ([Yu et al 2019](https://arxiv.org/abs/1905.00421))
+- delta encodings (todo: find reference)
 
 ## Usage
 
