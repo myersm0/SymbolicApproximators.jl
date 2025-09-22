@@ -1,28 +1,33 @@
 
 module SymbolicDiscretizers
 
-using Statistics: mean, std, quantile
-using LinearAlgebra: norm
+using LinearAlgebra
+using Distributions
+using StatsBase
 
 export SymbolicDiscretizer, SAX, OrdinalDiscretizer, DeltaDiscretizer
 export discretize, reconstruct, distance
+export StreamingDiscretizer, update!, get_symbols
+export build_distance_table, numerosity_reduction
 
 abstract type SymbolicDiscretizer end
 
 struct SAX <: SymbolicDiscretizer
-	nsegments::Int  # dimensionality reduction (w in paper)
+	nsegments::Int
 	alphabet_size::Int
 	normalize::Bool
 	breakpoints::Vector{Float64}
-	function SAX(nsegments::Int, alphabet_size::Int; normalize::Bool=true)
+	distance_table::Union{Nothing, Matrix{Float64}}
+	function SAX(nsegments::Integer, alphabet_size::Integer; normalize = true, use_table = true)
 		breakpoints = compute_gaussian_breakpoints(alphabet_size)
-		new(nsegments, alphabet_size, normalize, breakpoints)
+		distance_table = use_table ? build_distance_table(breakpoints) : nothing
+		new(nsegments, alphabet_size, normalize, breakpoints, distance_table)
 	end
 end
 
 struct OrdinalDiscretizer <: SymbolicDiscretizer
 	alphabet_size::Int
-	method::Symbol  # :rank or :quantile for now
+	method::Symbol
 	function OrdinalDiscretizer(alphabet_size::Int; method::Symbol=:quantile)
 		method in [:rank, :quantile] || error("method must be :rank or :quantile")
 		new(alphabet_size, method)
@@ -31,12 +36,81 @@ end
 
 struct DeltaDiscretizer <: SymbolicDiscretizer
 	alphabet_size::Int
-	order::Int  # 1 for first difference, 2 for second, etc.
+	order::Int
 	base_discretizer::Union{Nothing, SymbolicDiscretizer}
 	function DeltaDiscretizer(alphabet_size::Int; order::Int=1, base::Union{Nothing, SymbolicDiscretizer}=nothing)
 		order > 0 || error("order must be positive")
 		new(alphabet_size, order, base)
 	end
+end
+
+mutable struct StreamingDiscretizer{T<:SymbolicDiscretizer}
+	discretizer::T
+	window_size::Int
+	buffer::Vector{Float64}
+	position::Int
+	symbols::Vector{Char}
+	function StreamingDiscretizer(disc::T, window_size::Int) where T<:SymbolicDiscretizer
+		new{T}(disc, window_size, zeros(window_size), 0, Char[])
+	end
+end
+
+function update!(sd::StreamingDiscretizer, value::Float64)
+	sd.position = mod1(sd.position + 1, sd.window_size)
+	sd.buffer[sd.position] = value
+	# only discretize when we have a full window
+	if sd.position == sd.window_size
+		# create a properly ordered view of the circular buffer
+		if sd.position == sd.window_size
+			ordered_buffer = sd.buffer
+		else
+			ordered_buffer = vcat(sd.buffer[sd.position+1:end], sd.buffer[1:sd.position])
+		end
+		sd.symbols = discretize(sd.discretizer, ordered_buffer)
+		return true
+	end
+	return false
+end
+
+function get_symbols(sd::StreamingDiscretizer)
+	return sd.symbols
+end
+
+function build_distance_table(breakpoints::Vector{Float64})
+	n = length(breakpoints) + 1
+	table = zeros(n, n)
+	for r in 1:n
+		for c in 1:n
+			if abs(r - c) <= 1
+				table[r, c] = 0.0
+			else
+				max_idx = max(r, c)
+				min_idx = min(r, c)
+				if min_idx == 1
+					low_val = breakpoints[1]
+				else
+					low_val = breakpoints[min_idx - 1]
+				end
+				if max_idx > length(breakpoints)
+					high_val = breakpoints[end]
+				else
+					high_val = breakpoints[max_idx - 1]
+				end
+				table[r, c] = abs(high_val - low_val)
+			end
+		end
+	end
+	return table
+end
+
+function numerosity_reduction(symbols::Vector{Char})
+	# run-length encoding for consecutive identical symbols
+	vals, lens = rle(symbols)
+	return vals, lens
+end
+
+function expand_numerosity(vals::Vector{Char}, lens::Vector{Int})
+	return inverse_rle(vals, lens)
 end
 
 
@@ -52,44 +126,18 @@ function compute_gaussian_breakpoints(alphabet_size::Int)
 		6 => [-0.97, -0.43, 0.0, 0.43, 0.97],
 		7 => [-1.07, -0.57, -0.18, 0.18, 0.57, 1.07],
 		8 => [-1.15, -0.67, -0.32, 0.0, 0.32, 0.67, 1.15],
+		9 => [-1.22, -0.76, -0.43, -0.14, 0.14, 0.43, 0.76, 1.22],
+		10 => [-1.28, -0.84, -0.52, -0.25, 0.0, 0.25, 0.52, 0.84, 1.28],
 	)
 	haskey(breakpoint_table, alphabet_size) && return breakpoint_table[alphabet_size]
-	# compute breakpoints for equal-area under standard normal
+	d = Normal(0, 1)
 	breakpoints = Float64[]
 	for i in 1:(alphabet_size-1)
 		prob = i / alphabet_size
-		push!(breakpoints, quantile_normal(prob))
+		push!(breakpoints, quantile(d, prob))
 	end
 	return breakpoints
 end
-
-# todo: do this better with Distributions.jl
-function quantile_normal(p::Float64)
-	if p == 0.5
-		return 0.0
-	elseif p < 0.5
-		return -sqrt(2) * erfcinv(2 * p)
-	else
-		return sqrt(2) * erfcinv(2 * (1 - p))
-	end
-end
-
-# approximation of erfcinv for self-contained implementation
-erfcinv(x::Float64) = -invnorm((x - 1) / 2) / sqrt(2)
-invnorm(p::Float64) = sqrt(2) * erfinv(2 * p - 1)
-
-# basic approximation of erfinv
-function erfinv(x::Float64)
-	a = 0.147
-	sgn = sign(x)
-	x = abs(x)
-	lnx = log(1 - x^2)
-	tt1 = 2 / (π * a) + lnx / 2
-	tt2 = lnx / a
-	return sgn * sqrt(sqrt(tt1^2 - tt2) - tt1)
-end
-
-
 
 # PAA (Piecewise Aggregate Approximation)
 function paa(series::Vector{Float64}, nsegments::Int)
@@ -110,13 +158,11 @@ end
 
 function discretize(sax::SAX, series::Vector{Float64})
 	n = length(series)
-	
 	if sax.normalize
 		μ = mean(series)
 		σ = std(series, corrected=false)
-		# Handle constant series
+		# handle constant series
 		if σ < 1e-10
-			# Return middle symbol for constant series
 			middle_symbol = Char('a' + div(sax.alphabet_size, 2))
 			return fill(middle_symbol, sax.nsegments)
 		end
@@ -124,14 +170,11 @@ function discretize(sax::SAX, series::Vector{Float64})
 	else
 		normalized = series
 	end
-	
 	paa_values = paa(normalized, sax.nsegments)
-	
 	symbols = Vector{Char}(undef, sax.nsegments)
 	for i in 1:sax.nsegments
 		symbols[i] = value_to_symbol(paa_values[i], sax.breakpoints)
 	end
-	
 	return symbols
 end
 
@@ -148,7 +191,7 @@ end
 function discretize(ord::OrdinalDiscretizer, series::Vector{Float64})
 	n = length(series)
 	if ord.method == :rank
-		ranks = sortperm(sortperm(series))  # double sortperm gives ranks
+		ranks = sortperm(sortperm(series))
 		symbols = Vector{Char}(undef, n)
 		bins = linspace_bins(1, n, ord.alphabet_size)
 		for i in 1:n
@@ -186,42 +229,44 @@ function discretize(delta::DeltaDiscretizer, series::Vector{Float64})
 	for _ in 1:delta.order
 		diff_series = diff(diff_series)
 	end
-	if delta.base_discretizer !== nothing
-		# Use base discretizer on the differences
-		return discretize(delta.base_discretizer, diff_series)
-	else
-		# Simple equal-width binning of differences
-		if isempty(diff_series)
-			return Char[]
-		end
-		min_val, max_val = extrema(diff_series)
-		range_val = max_val - min_val
-		if range_val < 1e-10
-			# All differences are the same
-			middle_symbol = Char('a' + div(delta.alphabet_size, 2))
-			return fill(middle_symbol, length(diff_series))
-		end
-		symbols = Vector{Char}(undef, length(diff_series))
-		for i in 1:length(diff_series)
-			# Map to [0, 1], then to alphabet
-			normalized = (diff_series[i] - min_val) / range_val
-			bin_idx = min(floor(Int, normalized * delta.alphabet_size), delta.alphabet_size - 1)
-			symbols[i] = Char('a' + bin_idx)
-		end
-		return symbols
+	isnothing(delta.base_discretizer) || return discretize(delta.base_discretizer, diff_series)
+	isempty(diff_series) && return Char[]
+	min_val, max_val = extrema(diff_series)
+	range_val = max_val - min_val
+	if range_val < 1e-10
+		middle_symbol = Char('a' + div(delta.alphabet_size, 2))
+		return fill(middle_symbol, length(diff_series))
 	end
+	symbols = Vector{Char}(undef, length(diff_series))
+	for i in 1:length(diff_series)
+		normalized = (diff_series[i] - min_val) / range_val
+		bin_idx = min(floor(Int, normalized * delta.alphabet_size), delta.alphabet_size - 1)
+		symbols[i] = Char('a' + bin_idx)
+	end
+	return symbols
 end
-
 
 ## distances
 
 function distance(d::SAX, symbols1::Vector{Char}, symbols2::Vector{Char})
 	length(symbols1) == length(symbols2) || error("Symbol sequences must have same length")
-	dist_sum = 0.0
-	for i in 1:length(symbols1)
-		dist_sum += distance(symbols1[i], symbols2[i], d.breakpoints)^2
+	if !isnothing(d.distance_table)
+		# use precomputed lookup table
+		dist_sum = 0.0
+		for i in 1:length(symbols1)
+			idx1 = Int(symbols1[i] - 'a') + 1
+			idx2 = Int(symbols2[i] - 'a') + 1
+			dist_sum += d.distance_table[idx1, idx2]^2
+		end
+		return sqrt(dist_sum)
+	else
+		# fall back to computation
+		dist_sum = 0.0
+		for i in 1:length(symbols1)
+			dist_sum += distance(symbols1[i], symbols2[i], d.breakpoints)^2
+		end
+		return sqrt(dist_sum)
 	end
-	return sqrt(dist_sum) # scale by compression ratio (as in SAX paper MINDIST)
 end
 
 function distance(s1::Char, s2::Char, breakpoints::Vector{Float64})
@@ -232,7 +277,6 @@ function distance(s1::Char, s2::Char, breakpoints::Vector{Float64})
 	
 	abs(idx1 - idx2) > 1 || return 0.0
 	
-	# get the breakpoint values
 	max_idx = max(idx1, idx2)
 	min_idx = min(idx1, idx2)
 	
@@ -264,34 +308,28 @@ function distance(d::DeltaDiscretizer, symbols1::Vector{Char}, symbols2::Vector{
 end
 
 
-## reconstruction (approximate inverse)
+## reconstruction
 
 function reconstruct(sax::SAX, symbols::Vector{Char}, original_length::Int)
-	# map symbols back to breakpoint midpoints
 	paa_values = zeros(length(symbols))
 	
 	for i in 1:length(symbols)
 		idx = Int(symbols[i] - 'a')
 		if idx == 0
-			# below first breakpoint
 			paa_values[i] = sax.breakpoints[1] - 0.5
 		elseif idx >= length(sax.breakpoints)
-			# above last breakpoint  
 			paa_values[i] = sax.breakpoints[end] + 0.5
 		else
-			# between breakpoints
 			paa_values[i] = (sax.breakpoints[idx] + sax.breakpoints[idx+1]) / 2
 		end
 	end
 	
-	# inverse PAA - simple repetition
 	segment_length = original_length / length(symbols)
 	reconstructed = Float64[]
 	
 	for i in 1:length(symbols)
 		repeat_count = round(Int, segment_length)
 		if i == length(symbols)
-			# last segment gets remaining points
 			repeat_count = original_length - length(reconstructed)
 		end
 		append!(reconstructed, fill(paa_values[i], repeat_count))
@@ -301,4 +339,3 @@ function reconstruct(sax::SAX, symbols::Vector{Char}, original_length::Int)
 end
 
 end
-

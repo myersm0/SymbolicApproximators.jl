@@ -1,5 +1,5 @@
 using SymbolicDiscretizers
-using Statistics
+using StatsBase
 using Test
 
 @testset "SymbolicDiscretizers Tests" begin
