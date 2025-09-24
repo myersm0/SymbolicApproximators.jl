@@ -5,26 +5,26 @@ function compute_gaussian_breakpoints(alphabet_size)
 end
 
 function build_distance_table(breakpoints::Vector{Float64})
-	n = length(breakpoints) + 1
-	table = zeros(n, n)
-	for r in 1:n
-		for c in 1:n
-			if abs(r - c) <= 1
-				table[r, c] = 0.0
+	n = m = length(breakpoints) + 1
+	table = zeros(m, n)
+	for i in 1:m
+		for j in 1:n
+			if abs(i - j) <= 1
+				table[i, j] = 0.0
 			else
-				max_idx = max(r, c)
-				min_idx = min(r, c)
-				if min_idx == 1
+				maxindex = max(i, j)
+				minindex = min(i, j)
+				if minindex == 1
 					low_val = breakpoints[1]
 				else
-					low_val = breakpoints[min_idx - 1]
+					low_val = breakpoints[minindex - 1]
 				end
-				if max_idx > length(breakpoints)
+				if maxindex > length(breakpoints)
 					high_val = breakpoints[end]
 				else
-					high_val = breakpoints[max_idx - 1]
+					high_val = breakpoints[maxindex - 1]
 				end
-				table[r, c] = abs(high_val - low_val)
+				table[i, j] = abs(high_val - low_val)
 			end
 		end
 	end
@@ -37,28 +37,23 @@ function paa(series::Vector{Float64}, nsegments::Int)
 	segment_length = n / nsegments
 	result = zeros(nsegments)
 	for i in 1:nsegments
-		start_idx = round(Int, (i - 1) * segment_length + 1)
-		end_idx = round(Int, i * segment_length)
-		end_idx = min(end_idx, n)
-		result[i] = mean(series[start_idx:end_idx])
+		start = round(Int, (i - 1) * segment_length + 1)
+		stop = min(n, round(Int, i * segment_length))
+		result[i] = mean(series[start:stop])
 	end
 	return result
 end
 
 function value_to_symbol(value::Float64, breakpoints::Vector{Float64})
-	for i in 1:length(breakpoints)
-		if value < breakpoints[i]
-			return Char('a' + i - 1)
-		end
+	for (i, b) in enumerate(breakpoints)
+		value < b && return Char('a' + i - 1)
 	end
 	return Char('a' + length(breakpoints))
 end
 
 function value_to_symbol_ordinal(value::Float64, breakpoints::Vector{Float64})
-	for i in 1:length(breakpoints)
-		if value <= breakpoints[i]
-			return Char('a' + i - 1)
-		end
+	for (i, b) in enumerate(breakpoints)
+		value <= b && return Char('a' + i - 1)
 	end
 	return Char('a' + length(breakpoints))
 end
@@ -70,24 +65,24 @@ end
 function distance(s1::Char, s2::Char, breakpoints::Vector{Float64})
 	s1 == s2 && return 0.0
 	
-	idx1 = Int(s1 - 'a')
-	idx2 = Int(s2 - 'a')
+	index1 = Int(s1 - 'a')
+	index2 = Int(s2 - 'a')
 	
-	abs(idx1 - idx2) > 1 || return 0.0
+	abs(index1 - index2) > 1 || return 0.0
 	
-	max_idx = max(idx1, idx2)
-	min_idx = min(idx1, idx2)
+	maxindex = max(index1, index2)
+	minindex = min(index1, index2)
 	
-	if min_idx == 0
+	if minindex == 0
 		low_val = breakpoints[1]
 	else
-		low_val = breakpoints[min_idx]
+		low_val = breakpoints[minindex]
 	end
 	
-	if max_idx > length(breakpoints)
+	if maxindex > length(breakpoints)
 		high_val = breakpoints[end]
 	else
-		high_val = breakpoints[max_idx]
+		high_val = breakpoints[maxindex]
 	end
 	
 	return abs(high_val - low_val)

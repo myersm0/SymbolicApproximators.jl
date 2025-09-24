@@ -8,8 +8,6 @@ using StatsBase
 abstract type SymbolicDiscretizer end
 export SymbolicDiscretizer
 
-export discretize, reconstruct, distance
-
 include("utilities.jl")
 export build_distance_table, numerosity_reduction
 
@@ -18,6 +16,7 @@ include("sax.jl")
 include("ordinal.jl")
 include("delta.jl")
 export SAX, OrdinalDiscretizer, DeltaDiscretizer
+export discretize, reconstruct, distance
 
 include("windows.jl")
 export StreamingDiscretizer, update!, get_symbols
