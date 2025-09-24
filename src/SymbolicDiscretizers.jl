@@ -9,7 +9,7 @@ abstract type SymbolicDiscretizer end
 export SymbolicDiscretizer
 
 include("utilities.jl")
-export build_distance_table, numerosity_reduction
+export numerosity_reduction
 
 # main algorithms
 include("sax.jl")

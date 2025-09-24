@@ -4,17 +4,16 @@ struct SAX <: SymbolicDiscretizer
 	alphabet_size::Int
 	normalize::Bool
 	breakpoints::Vector{Float64}
-	distance_table::Union{Nothing, Matrix{Float64}}
-	function SAX(nsegments::Integer, alphabet_size::Integer; normalize = true, use_table = true)
-		breakpoints = compute_gaussian_breakpoints(alphabet_size)
-		distance_table = use_table ? build_distance_table(breakpoints) : nothing
-		new(nsegments, alphabet_size, normalize, breakpoints, distance_table)
-	end
+end
+
+function SAX(nsegments::Integer, alphabet_size::Integer; normalize = true)
+	breakpoints = compute_gaussian_breakpoints(alphabet_size)
+	SAX(nsegments, alphabet_size, normalize, breakpoints)
 end
 
 function discretize(d::SAX, series::Vector{Float64})
 	n = length(series)
-	# todo: make a `normalize()` fn
+	# todo: make a `normalize()` fn or use from StatsBase
 	if d.normalize
 		μ = mean(series)
 		σ = std(series, corrected=false)
@@ -34,23 +33,11 @@ end
 
 function distance(d::SAX, symbols1::Vector{Char}, symbols2::Vector{Char})
 	length(symbols1) == length(symbols2) || error("Symbol sequences must have same length")
-	if !isnothing(d.distance_table)
-		# use precomputed lookup table
-		dist_sum = 0.0
-		for i in 1:length(symbols1)
-			idx1 = Int(symbols1[i] - 'a') + 1
-			idx2 = Int(symbols2[i] - 'a') + 1
-			dist_sum += d.distance_table[idx1, idx2]^2
-		end
-		return sqrt(dist_sum)
-	else
-		# fall back to computation
-		dist_sum = 0.0
-		for i in 1:length(symbols1)
-			dist_sum += distance(symbols1[i], symbols2[i], d.breakpoints)^2
-		end
-		return sqrt(dist_sum)
+	dist_sum = 0.0
+	for (a, b) in zip(symbols1, symbols2)
+		dist_sum += distance(a, b, d.breakpoints)^2
 	end
+	return sqrt(dist_sum)
 end
 
 function reconstruct(sax::SAX, symbols::Vector{Char}, original_length::Int)

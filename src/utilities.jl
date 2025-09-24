@@ -4,33 +4,6 @@ function compute_gaussian_breakpoints(alphabet_size)
 	return quantile.(Normal(), (1:(alphabet_size-1)) ./ alphabet_size)
 end
 
-function build_distance_table(breakpoints::Vector{Float64})
-	n = m = length(breakpoints) + 1
-	table = zeros(m, n)
-	for i in 1:m
-		for j in 1:n
-			if abs(i - j) <= 1
-				table[i, j] = 0.0
-			else
-				maxindex = max(i, j)
-				minindex = min(i, j)
-				if minindex == 1
-					low_val = breakpoints[1]
-				else
-					low_val = breakpoints[minindex - 1]
-				end
-				if maxindex > length(breakpoints)
-					high_val = breakpoints[end]
-				else
-					high_val = breakpoints[maxindex - 1]
-				end
-				table[i, j] = abs(high_val - low_val)
-			end
-		end
-	end
-	return table
-end
-
 # PAA (Piecewise Aggregate Approximation)
 function paa(series::Vector{Float64}, nsegments::Int)
 	n = length(series)
