@@ -1,9 +1,4 @@
 
-function compute_gaussian_breakpoints(alphabet_size)
-	alphabet_size > 1 || error("alphabet_size must be at least 2")
-	return quantile.(Normal(), (1:(alphabet_size-1)) ./ alphabet_size)
-end
-
 # PAA (Piecewise Aggregate Approximation)
 function paa(series::Vector{Float64}, nsegments::Int)
 	n = length(series)

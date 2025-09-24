@@ -7,41 +7,41 @@ struct SAX <: SymbolicDiscretizer
 end
 
 function SAX(nsegments::Integer, alphabet_size::Integer; normalize = true)
-	breakpoints = compute_gaussian_breakpoints(alphabet_size)
-	SAX(nsegments, alphabet_size, normalize, breakpoints)
+	alphabet_size > 1 || error("alphabet_size must be at least 2")
+	breakpoints = quantile.(Normal(), (1:(alphabet_size-1)) ./ alphabet_size)
+	return SAX(nsegments, alphabet_size, normalize, breakpoints)
 end
 
-function discretize(d::SAX, series::Vector{Float64})
+function discretize(disc::SAX, series::Vector{Float64})
 	# todo: make a `normalize()` fn or use from StatsBase
-	if d.normalize
+	if disc.normalize
 		μ = mean(series)
 		σ = std(series, corrected=false)
 		# handle constant series
 		if σ < 1e-10
-			middle_symbol = Char('a' + div(d.alphabet_size, 2))
+			middle_symbol = Char('a' + div(disc.alphabet_size, 2))
 			return fill(middle_symbol, d.nsegments)
 		end
 		normalized = (series .- μ) ./ σ
 	else
 		normalized = series
 	end
-	paa_values = paa(normalized, d.nsegments)
-	symbols = [value_to_symbol(paa_values[i], d.breakpoints) for i in 1:d.nsegments]
+	paa_values = paa(normalized, disc.nsegments)
+	symbols = [value_to_symbol(paa_values[i], disc.breakpoints) for i in 1:disc.nsegments]
 	return symbols
 end
 
-function distance(d::SAX, symbols1::Vector{Char}, symbols2::Vector{Char})
+function distance(disc::SAX, symbols1::Vector{Char}, symbols2::Vector{Char})
 	length(symbols1) == length(symbols2) || error("Symbol sequences must have same length")
 	dist_sum = 0.0
 	for (a, b) in zip(symbols1, symbols2)
-		dist_sum += distance(a, b, d.breakpoints)^2
+		dist_sum += distance(a, b, disc.breakpoints)^2
 	end
 	return sqrt(dist_sum)
 end
 
 function reconstruct(sax::SAX, symbols::Vector{Char}, original_length::Int)
 	paa_values = zeros(length(symbols))
-	
 	for i in 1:length(symbols)
 		idx = Int(symbols[i] - 'a')
 		if idx == 0
@@ -52,10 +52,8 @@ function reconstruct(sax::SAX, symbols::Vector{Char}, original_length::Int)
 			paa_values[i] = (sax.breakpoints[idx] + sax.breakpoints[idx+1]) / 2
 		end
 	end
-	
 	segment_length = original_length / length(symbols)
 	reconstructed = Float64[]
-	
 	for i in 1:length(symbols)
 		repeat_count = round(Int, segment_length)
 		if i == length(symbols)
@@ -63,7 +61,6 @@ function reconstruct(sax::SAX, symbols::Vector{Char}, original_length::Int)
 		end
 		append!(reconstructed, fill(paa_values[i], repeat_count))
 	end
-	
 	return reconstructed[1:original_length]
 end
 
