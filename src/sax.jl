@@ -12,7 +12,6 @@ function SAX(nsegments::Integer, alphabet_size::Integer; normalize = true)
 end
 
 function discretize(d::SAX, series::Vector{Float64})
-	n = length(series)
 	# todo: make a `normalize()` fn or use from StatsBase
 	if d.normalize
 		μ = mean(series)

@@ -1,11 +1,10 @@
 
 struct OrdinalDiscretizer <: SymbolicDiscretizer
-	order::Int		    # d in Keller paper, n in Bandt-Pompe
-	delay::Int		    # τ (tau) - time delay
-	overlapping::Bool  # whether windows overlap
+	order::Int  # d in Keller paper, n in Bandt-Pompe
+	delay::Int  # τ (tau) - time delay
 end
 
-function OrdinalDiscretizer(order::Int; delay::Int = 1, overlapping = true)
+function OrdinalDiscretizer(order::Int; delay::Int = 1)
 	order >= 1 || error("order must be at least 1")
 	order <= 8 || @warn "order > 8 may be expensive ($((order+1)!) patterns)"
 	delay >= 1 || error("delay must be at least 1")
@@ -36,28 +35,14 @@ function ordinal_pattern_to_number(series::AbstractVector{Float64}, t::Int, d::I
 	return n
 end
 
-function discretize(opd::OrdinalDiscretizer, series::Vector{Float64})
-	n = length(series)
-	d = opd.order
-	τ = opd.delay
-	min_length = d * τ + 1
-	n >= min_length || error("Series too short: need at least $min_length points")
-	
-	# determine indices for patterns
-	if opd.overlapping
-		indices = (d*τ + 1):n  # can compute pattern at each valid position
-	else
-		indices = (d*τ + 1):(d*τ + 1):(n)  # non-overlapping windows
-	end
-	
-	symbols = Vector{Char}(undef, length(indices))
-	for (i, t) in enumerate(indices)
-		# get pattern number (0 to (d+1)!-1)
-		pattern_num = ordinal_pattern_to_number(series, t, d, τ)
-		# map to alphabet (todo: may need modulo for large orders)
-		symbols[i] = Char('a' + pattern_num)
-	end
-	return symbols
+function discretize(disc::OrdinalDiscretizer, values::Vector{Float64})
+	d = disc.order
+	τ = disc.delay
+	expected_size = d * τ + 1
+	n >= expected_size || error("Window too small for order=$d, delay=$τ")
+	t = length(values)
+	pattern_num = ordinal_pattern_to_number(values, t, d, τ)
+	return Char('a' + pattern_num)
 end
 
 function permutation_entropy(opd::OrdinalDiscretizer, series::Vector{Float64})
