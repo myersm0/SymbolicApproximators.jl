@@ -5,11 +5,14 @@ using LinearAlgebra
 using Distributions
 using StatsBase
 
-abstract type SymbolicDiscretizer end
-export SymbolicDiscretizer
+include("discretizers.jl")
+export SymbolicDiscretizer, alphabet, breakpoints, cardinality
 
 include("utilities.jl")
 export numerosity_reduction
+
+include("words.jl")
+export Word
 
 # main algorithms
 include("sax.jl")

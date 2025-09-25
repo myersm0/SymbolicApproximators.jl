@@ -12,20 +12,6 @@ function paa(series::Vector{Float64}, nsegments::Int)
 	return result
 end
 
-function value_to_symbol(value::Float64, breakpoints::Vector{Float64})
-	for (i, b) in enumerate(breakpoints)
-		value < b && return Char('a' + i - 1)
-	end
-	return Char('a' + length(breakpoints))
-end
-
-function value_to_symbol_ordinal(value::Float64, breakpoints::Vector{Float64})
-	for (i, b) in enumerate(breakpoints)
-		value <= b && return Char('a' + i - 1)
-	end
-	return Char('a' + length(breakpoints))
-end
-
 function linspace_bins(start, stop, n)
 	return collect(range(start, stop, length=n+1))[2:end]
 end
