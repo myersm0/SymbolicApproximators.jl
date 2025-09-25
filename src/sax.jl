@@ -1,8 +1,8 @@
 
 struct SAX{T, A <: AbstractVector{T}} <: SymbolicApproximator{T, A}
-	w::Int              # word size
-	α::A                # alphabet
-	β::Vector{Float64}  # breakpoints
+	w::Union{Nothing, Int}  # word size
+	α::A                    # alphabet
+	β::Vector{Float64}      # breakpoints
 end
 
 function SAX(w::Integer, α::AbstractVector{T}) where T
@@ -19,16 +19,12 @@ function SAX(w::Integer, cardinality::Integer)
 	return SAX(w, α)
 end
 
-function _encode_segment(disc::SAX, values::Vector{Float64})
+function _encode_segment(sax::SAX, values::AbstractVector{Float64})
 	μ = mean(values)
-	σ = std(values, corrected=false)
-	# handle constant values
-	if σ < 1e-10
-		middle_symbol = Char('a' + div(length(disc.α), 2))
-		return fill(middle_symbol, d.w)
-	end
+	σ = std(values, corrected = false)
+	# todo: handle case of very small sigma
 	normalized = (values .- μ) ./ σ
-	paa_values = paa(normalized, disc.w)
-	return Word(disc, paa_values)
+	return _encode_segment(PAA(), normalized)
 end
+
 

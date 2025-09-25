@@ -1,33 +1,64 @@
 
-mutable struct StreamingApproximator{T<:SymbolicApproximator}
-	discretizer::T
-	window_size::Int
-	buffer::Vector{Float64}
-	position::Int
-	symbols::Vector{Char}
-	function StreamingApproximator(disc::T, window_size::Int) where T<:SymbolicApproximator
-		new{T}(disc, window_size, zeros(window_size), 0, Char[])
+function windows(
+		values::AbstractVector, window_size::Int; 
+		stride = 1, delay = 1
+	)
+	n = length(values)
+	max_start = n - delay * (window_size - 1)
+	return (
+		@view(
+			values[i:delay:i+delay*(window_size-1)]
+		)
+		for i in 1:stride:max_start
+	)
+end
+
+function segments(values::AbstractVector, n_segments::Int)
+	n = length(values)
+	segment_length = n ÷ n_segments
+	return (
+		@view(
+			values[(i-1)*segment_length+1 : (i==n_segments ? n : i*segment_length)]
+		)
+		for i in 1:n_segments
+	)
+end
+
+function segments(values::AbstractVector, segment_lengths::Vector{Int})
+	n = length(values)
+	sum(segment_lengths) == n || 
+		error("Segment lengths must sum to values length $n")
+	start = 1
+	return map(segment_lengths) do len
+		segment = @view(values[start:start+len-1])
+		start += len
+		segment
 	end
 end
 
-function update!(sd::StreamingApproximator, value::Float64)
-	sd.position = mod1(sd.position + 1, sd.window_size)
-	sd.buffer[sd.position] = value
-	# only discretize when we have a full window
-	if sd.position == sd.window_size
-		# create a properly ordered view of the circular buffer
-		if sd.position == sd.window_size
-			ordered_buffer = sd.buffer
-		else
-			ordered_buffer = vcat(sd.buffer[sd.position+1:end], sd.buffer[1:sd.position])
-		end
-		sd.symbols = discretize(sd.discretizer, ordered_buffer)
-		return true
+# 707 ns
+function encode(sa::SymbolicApproximator, values::AbstractVector)
+	n = length(values)
+	w = word_size(sa)
+	segment_length = n ÷ w  # todo: handle case of not divisible
+	result = Vector{Float64}(undef, w)
+	@inbounds for i in 1:w
+		start = round(Int, (i - 1) * segment_length + 1)
+		stop = min(n, round(Int, i * segment_length))
+		segment = view(values, start:stop)
+		result[i] = _encode_segment(sa, segment)
 	end
-	return false
+	return Word(sa, result)
 end
 
-function get_symbols(sd::StreamingApproximator)
-	return sd.symbols
+# 696 ns
+function encode(sa::SymbolicApproximator, values::AbstractVector)
+	w = word_size(sa)
+	segs = segments(values, w)
+	return Word(sa, [_encode_segment(sa, seg) for seg in segs])
 end
+
+
+
+
 
