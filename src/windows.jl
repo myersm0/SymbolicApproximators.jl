@@ -1,16 +1,16 @@
 
-mutable struct StreamingDiscretizer{T<:SymbolicDiscretizer}
+mutable struct StreamingApproximator{T<:SymbolicApproximator}
 	discretizer::T
 	window_size::Int
 	buffer::Vector{Float64}
 	position::Int
 	symbols::Vector{Char}
-	function StreamingDiscretizer(disc::T, window_size::Int) where T<:SymbolicDiscretizer
+	function StreamingApproximator(disc::T, window_size::Int) where T<:SymbolicApproximator
 		new{T}(disc, window_size, zeros(window_size), 0, Char[])
 	end
 end
 
-function update!(sd::StreamingDiscretizer, value::Float64)
+function update!(sd::StreamingApproximator, value::Float64)
 	sd.position = mod1(sd.position + 1, sd.window_size)
 	sd.buffer[sd.position] = value
 	# only discretize when we have a full window
@@ -27,7 +27,7 @@ function update!(sd::StreamingDiscretizer, value::Float64)
 	return false
 end
 
-function get_symbols(sd::StreamingDiscretizer)
+function get_symbols(sd::StreamingApproximator)
 	return sd.symbols
 end
 

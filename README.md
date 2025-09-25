@@ -1,4 +1,4 @@
-# SymbolicDiscretizers
+# SymbolicApproximators
 A Julia package to transform continuous signals (such as time series) into symbolic representations, while preserving meaningful patterns and distances.
 
 ** This package is still under development. Check back soon. **
@@ -14,7 +14,7 @@ In particular we implement the following algorithms:
 ## Usage
 
 ```julia
-using SymbolicDiscretizers
+using SymbolicApproximators
 
 signal = sin.(range(0, 4π, length=100))
 
@@ -27,7 +27,7 @@ symbols2 = discretize(sax, cos.(range(0, 4π, length=100)))
 dist = distance(sax, symbols, symbols2)
 ```
 
-## Discretizers
+## Approximators
 
 ### SAX
 - Divides signal into segments (PAA)
@@ -35,12 +35,12 @@ dist = distance(sax, symbols, symbols2)
 - Guarantees lower-bounding distances
 - Best for general time series, normalized patterns
 
-### OrdinalDiscretizer
+### OrdinalApproximator
 - Preserves rank ordering
 - Two methods: `:rank` and `:quantile`
 - Best when relative position matters more than absolute values
 
-### DeltaDiscretizer
+### DeltaApproximator
 - Encodes differences between consecutive values
 - Configurable order (1st, 2nd differences)
 - Can chain with other discretizers
@@ -62,4 +62,4 @@ dist = distance(sax, symbols, symbols2)
 MIT
 
 
-[![Build Status](https://github.com/myersm0/SymbolicDiscretizers.jl/actions/workflows/CI.yml/badge.svg?branch=main)](https://github.com/myersm0/SymbolicDiscretizers.jl/actions/workflows/CI.yml?query=branch%3Amain)
+[![Build Status](https://github.com/myersm0/SymbolicApproximators.jl/actions/workflows/CI.yml/badge.svg?branch=main)](https://github.com/myersm0/SymbolicApproximators.jl/actions/workflows/CI.yml?query=branch%3Amain)

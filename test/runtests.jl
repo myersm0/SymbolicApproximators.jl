@@ -1,8 +1,8 @@
-using SymbolicDiscretizers
+using SymbolicApproximators
 using StatsBase
 using Test
 
-@testset "SymbolicDiscretizers Tests" begin
+@testset "SymbolicApproximators Tests" begin
 	
 	@testset "SAX basic functionality" begin
 		# sine wave
@@ -52,10 +52,10 @@ using Test
 		@test dist > 0.0
 	end
 	
-	@testset "OrdinalDiscretizer" begin
+	@testset "OrdinalApproximator" begin
 		# test ranking method
 		data = [3.0, 1.0, 4.0, 1.0, 5.0, 9.0, 2.0, 6.0]
-		ord_rank = OrdinalDiscretizer(3, method=:rank)
+		ord_rank = OrdinalApproximator(3, method=:rank)
 		symbols = discretize(ord_rank, data)
 		@test length(symbols) == length(data)
 		@test all(s in ['a', 'b', 'c'] for s in symbols)
@@ -63,15 +63,15 @@ using Test
 		max_idx = argmax(data)
 		@test symbols[max_idx] == 'c'
 		# test quantile method
-		ord_quant = OrdinalDiscretizer(3, method=:quantile)
+		ord_quant = OrdinalApproximator(3, method=:quantile)
 		symbols = discretize(ord_quant, data)
 		@test length(symbols) == length(data)
 	end
 	
-	@testset "DeltaDiscretizer" begin
+	@testset "DeltaApproximator" begin
 		linear = collect(1.0:10.0)
 		# first-order differences should be constant
-		delta = DeltaDiscretizer(3, order=1)
+		delta = DeltaApproximator(3, order=1)
 		symbols = discretize(delta, linear)
 		@test length(symbols) == length(linear) - 1
 		# all differences are the same (1.0), should map to same symbol
@@ -82,7 +82,7 @@ using Test
 		# should alternate between positive and negative differences
 		@test length(unique(symbols)) > 1
 		# test with base discretizer
-		delta_sax = DeltaDiscretizer(3, order=1, base=SAX(4, 3))
+		delta_sax = DeltaApproximator(3, order=1, base=SAX(4, 3))
 		t = range(0, 2π, length=50)
 		signal = sin.(t)
 		symbols = discretize(delta_sax, signal)
@@ -93,7 +93,7 @@ using Test
 		# test that different discretizers have working distance functions
 		data1 = collect(1:100) .+ 0.1
 		data2 = collect(1:100) .* 2.0
-		for disc in [SAX(10, 5), OrdinalDiscretizer(5), DeltaDiscretizer(5)]
+		for disc in [SAX(10, 5), OrdinalApproximator(5), DeltaApproximator(5)]
 			symbols1 = discretize(disc, data1)
 			symbols2 = discretize(disc, data2)
 			# distance to self should be 0

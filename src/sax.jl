@@ -1,5 +1,5 @@
 
-struct SAX{T, A <: AbstractVector{T}} <: SymbolicDiscretizer{T, A}
+struct SAX{T, A <: AbstractVector{T}} <: SymbolicApproximator{T, A}
 	w::Int              # word size
 	α::A                # alphabet
 	β::Vector{Float64}  # breakpoints

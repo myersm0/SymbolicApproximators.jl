@@ -1,15 +1,15 @@
 
-struct DeltaDiscretizer <: SymbolicDiscretizer
+struct DeltaApproximator <: SymbolicApproximator
 	alphabet_size::Int
 	order::Int
-	base_discretizer::Union{Nothing, SymbolicDiscretizer}
-	function DeltaDiscretizer(alphabet_size::Int; order::Int=1, base::Union{Nothing, SymbolicDiscretizer}=nothing)
+	base_discretizer::Union{Nothing, SymbolicApproximator}
+	function DeltaApproximator(alphabet_size::Int; order::Int=1, base::Union{Nothing, SymbolicApproximator}=nothing)
 		order > 0 || error("order must be positive")
 		new(alphabet_size, order, base)
 	end
 end
 
-function discretize(d::DeltaDiscretizer, series::Vector{Float64})
+function discretize(d::DeltaApproximator, series::Vector{Float64})
 	diff_series = series
 	for _ in 1:d.order
 		diff_series = diff(diff_series)
@@ -31,7 +31,7 @@ function discretize(d::DeltaDiscretizer, series::Vector{Float64})
 	return symbols
 end
 
-function distance(d::DeltaDiscretizer, symbols1::Vector{Char}, symbols2::Vector{Char})
+function distance(d::DeltaApproximator, symbols1::Vector{Char}, symbols2::Vector{Char})
 	# Hamming distance for delta (could be refined)
 	length(symbols1) == length(symbols2) || error("Symbol sequences must have same length")
 	return sum(symbols1 .!= symbols2)

@@ -1,14 +1,14 @@
 
-struct OrdinalDiscretizer <: SymbolicDiscretizer
+struct OrdinalApproximator <: SymbolicApproximator
 	order::Int  # d in Keller paper, n in Bandt-Pompe
 	delay::Int  # τ (tau) - time delay
 end
 
-function OrdinalDiscretizer(order::Int; delay::Int = 1)
+function OrdinalApproximator(order::Int; delay::Int = 1)
 	order >= 1 || error("order must be at least 1")
 	order <= 8 || @warn "order > 8 may be expensive ($((order+1)!) patterns)"
 	delay >= 1 || error("delay must be at least 1")
-	return OrdinalDiscretizer(order, delay, overlapping)
+	return OrdinalApproximator(order, delay, overlapping)
 end
 
 # efficient pattern encoding using inversions (from Keller & Sinn)
@@ -35,7 +35,7 @@ function ordinal_pattern_to_number(series::AbstractVector{Float64}, t::Int, d::I
 	return n
 end
 
-function discretize(disc::OrdinalDiscretizer, values::Vector{Float64})
+function discretize(disc::OrdinalApproximator, values::Vector{Float64})
 	d = disc.order
 	τ = disc.delay
 	expected_size = d * τ + 1
@@ -45,7 +45,7 @@ function discretize(disc::OrdinalDiscretizer, values::Vector{Float64})
 	return Char('a' + pattern_num)
 end
 
-function permutation_entropy(opd::OrdinalDiscretizer, series::Vector{Float64})
+function permutation_entropy(opd::OrdinalApproximator, series::Vector{Float64})
 	symbols = discretize(opd, series)
 	pattern_counts = Dict{Char, Int}()
 	for s in symbols
@@ -60,7 +60,7 @@ function permutation_entropy(opd::OrdinalDiscretizer, series::Vector{Float64})
 	return entropy
 end
 
-function permutation_entropy_normalized(opd::OrdinalDiscretizer, series::Vector{Float64})
+function permutation_entropy_normalized(opd::OrdinalApproximator, series::Vector{Float64})
 	H = permutation_entropy(opd, series)
 	H_max = log2(factorial(opd.order + 1))
 	return H / H_max
