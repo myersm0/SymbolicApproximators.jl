@@ -18,6 +18,11 @@ function Word(disc::D, values) where D
 	Word{D,T}(Ref(disc), symbols)
 end
 
+alphabet(word::Word) = alphabet(word.disc[])
+breakpoints(word::Word) = breakpoints(word.disc[])
+cardinality(word::Word) = cardinality(word.disc[])
+
+Base.getindex(word::Word, args...) = getindex(word.symbols, args...)
 
 
 
