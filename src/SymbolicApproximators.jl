@@ -6,19 +6,18 @@ using Distributions
 using StatsBase
 
 include("approximators.jl")
-export SymbolicApproximator, alphabet, breakpoints, cardinality
-
-include("utilities.jl")
-export numerosity_reduction
+export Approximator, ContinuousApproximator, SymbolicApproximator
+export alphabet, breakpoints, cardinality, alphabet_size
 
 include("words.jl")
 export Word
 
 # main algorithms
+include("paa.jl")
 include("sax.jl")
 include("ordinal.jl")
 include("delta.jl")
-export SAX, OrdinalApproximator, DeltaApproximator
+export PAA, SAX, OrdinalApproximator, DeltaApproximator
 export discretize, reconstruct, distance
 
 include("windows.jl")

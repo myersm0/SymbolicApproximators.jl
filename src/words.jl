@@ -1,12 +1,17 @@
 
-struct Word{D, T}
-	disc::Ref{D}
+struct Word{D, T} <: AbstractVector{T}
+	approximator::Ref{D}
 	symbols::Vector{T}
 end
 
-function Word(disc::D, values) where D
-	α = disc.α
-	β = disc.β
+function Word(ca::CA, values) where CA <: ContinuousApproximator
+	T = eltype(ca)
+	return Word{CA, T}(Ref(ca), values)
+end
+
+function Word(sa::SA, values) where SA <: SymbolicApproximator
+	α = sa.α
+	β = sa.β
 	T = eltype(α)
 	n = length(values)
 	symbols = Vector{T}(undef, n)
@@ -15,17 +20,17 @@ function Word(disc::D, values) where D
 		index = searchsortedlast(β, v)
 		symbols[i] = α[index + 1]
 	end
-	Word{D,T}(Ref(disc), symbols)
+	return Word{SA, T}(Ref(sa), symbols)
 end
 
-Base.eltype(word::Word{D, T}) where {D, T} = T
-alphabet(word::Word) = alphabet(word.disc[])
-breakpoints(word::Word) = breakpoints(word.disc[])
-cardinality(word::Word) = cardinality(word.disc[])
+alphabet(word::Word) = alphabet(word.approximator[])
+breakpoints(word::Word) = breakpoints(word.approximator[])
+cardinality(word::Word) = cardinality(word.approximator[])
 
+Base.size(w::Word) = size(w.symbols)
 Base.getindex(word::Word, args...) = getindex(word.symbols, args...)
-Base.length(word::Word) = length(word.symbols)
-
+Base.IndexStyle(::Type{<:Word}) = IndexLinear()
+Base.iterate(w::Word, state = 1) = iterate(w.symbols, state)
 
 
 

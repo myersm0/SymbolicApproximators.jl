@@ -1,13 +1,22 @@
 
-abstract type SymbolicApproximator{T, A} end
+abstract type Approximator{T} end
+abstract type ContinuousApproximator{T} <: Approximator{T} end
+abstract type SymbolicApproximator{T, A} <: Approximator{T} end
 
-Base.eltype(::SymbolicApproximator{T, A}) where {T, A} = T
-alphabet(disc::SymbolicApproximator) where {T, A} = disc.α
-breakpoints(disc::SymbolicApproximator) where {T, A} = disc.β
-cardinality(disc::SymbolicApproximator) where {T, A} = length(alphabet(disc))
+word_size(a::Approximator) = a.w
+Base.eltype(::Approximator{T}) where T = T
 
-function discretize(::SymbolicApproximator, values::AbstactVector) end
+alphabet(sa::ContinuousApproximator{T}) where T = T(Inf)
+breakpoints(sa::ContinuousApproximator) = nothing
+cardinality(sa::ContinuousApproximator) = nothing
+alphabet_size(sa::ContinuousApproximator{T}) where T = T(Inf)
 
+alphabet(sa::SymbolicApproximator) = sa.α
+breakpoints(sa::SymbolicApproximator) = sa.β
+cardinality(sa::SymbolicApproximator) = length(alphabet(sa))
+alphabet_size(sa::SymbolicApproximator) = cardinality(sa)
+
+function encode(::Approximator, values::AbstractVector) end
 
 
 
