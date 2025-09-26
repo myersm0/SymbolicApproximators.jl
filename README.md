@@ -1,10 +1,12 @@
 # SymbolicApproximators
-A Julia package implementing Symbolic Aggregate approXimation (SAX) and related methods for symbolic discretization and dimension reduction. These techniques allow you to take continuous-valued sequences (including but not necessarily limited to time series) and then use things like string algorithms and machine learning algorithms for categorical data.
 
-We have implemented (or are in the process of doing so) the following algorithms:
+## Overview
+A Julia package implementing **Symbolic Aggregate approXimation (SAX)** and related methods for symbolic discretization and dimension reduction. These techniques allow you to take continuous-valued sequences (including but not necessarily limited to time series) and then use things like string algorithms and machine learning algorithms for categorical data.
+
+The following algorithms are implemented or under development:
 | |Algorithm|
-|-|:------------------------------------------------------------------------------------------------|
-|☑|Piecewise Aggregate Approximation (PAA) (todo: find reference)|
+|-|:-------------------------------------------------------------------------------------------------|
+|☑|Piecewise Aggregate Approximation (PAA) ([Lin et al 2003](https://www.cs.ucr.edu/~eamonn/SAX.pdf))|
 |☑|Symbolic Aggregate approXimation (SAX) ([Lin et al 2003](https://www.cs.ucr.edu/~eamonn/SAX.pdf))|
 |☐|Extended SAX (ESAX) (Lkhagva et al 2006)|
 |☐|Indexable SAX (iSAX) ([Shieh et al 2008](https://www.cs.ucr.edu/~eamonn/iSAX.pdf))|
@@ -13,6 +15,11 @@ We have implemented (or are in the process of doing so) the following algorithms
 |☐|delta encodings (todo: find reference)|
 
 Note that the first one, PAA, is actually a continuous rather than a symbolic representation, but we include it in the package because all the SAX variants depend on it.
+
+Coming soon there will be additional functionality such as:
+- rolling window/segment functions to enable operations on streaming data
+- distance functions (using [Distances.jl](https://github.com/JuliaStats/Distances.jl))
+- other functions depending on algorithm, such as numerosity reduction and permutation entropy
 
 ## Usage
 Usage revolves around this basic workflow:
@@ -35,11 +42,7 @@ symbols = encode(approximator, normalized)
 # Result: ['d', 'e', 'c', 'a', 'b', 'd', 'e', 'c', 'a', 'b']
 ```
 
-Coming soon there will be additional functionality such as:
-- more algorithms implemented
-- rolling window/segment functions to enable operations on streaming data
-- distance functions (using [Distances.jl](https://github.com/JuliaStats/Distances.jl))
-- other functions depending on algorithm, such numerosity reduction and permutation entropy
+
 
 ## License
 
