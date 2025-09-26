@@ -3,10 +3,6 @@ abstract type AbstractApproximator{T} end
 abstract type ContinuousApproximator{T} <: AbstractApproximator{T} end
 abstract type SymbolicApproximator{T, A} <: AbstractApproximator{T} end
 
-abstract type PreprocessingStyle end
-struct NoPreprocessing <: PreprocessingStyle end
-struct Normalize <: PreprocessingStyle end
-
 word_size(a::AbstractApproximator) = a.w
 Base.eltype(::AbstractApproximator{T}) where T = T
 
