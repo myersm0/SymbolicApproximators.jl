@@ -16,8 +16,8 @@ Note that the first one, PAA, is actually a continuous rather than a symbolic re
 
 ## Usage
 Usage revolves around this basic workflow:
-1. Define a `SymbolicApproximator` with integer arguments for _word size_ (i.e., the number of segments) and _alphabet size_ (also called cardinality), respectively. For example, `SAX(10, 5)` will give you an approximator designed to break your data into 10 segments and repreprent those segments with a symbol set of cardinality 5 (specifically, symbols will be the letters 'a' through 'e' because `Char` is the default).
-  - Alternatively instead of specifying an alphabet _length_, you can directly pass in the _symbol set_ that you want to use in your output word. For example, `SAX(10, -2:2)` or equivalently `SAX(10, [-2, 1, 0, 1, 2])` will give you an alphabet size of 5 where the symbols will be the numbers -2 through 2 inclusive.)
+1. Define a `SymbolicApproximator` with integer arguments for _word size_ (i.e., the number of segments) and _alphabet size_ (also called cardinality), respectively. For example, `SAX(10, 5)` will give you an approximator designed to break your data into 10 segments, and it will repreprent each of those segments using one of the letters 'a' through 'e' (because `Char` is the default symbol type).
+    - Alternatively instead of specifying an alphabet _length_, you can directly pass in the _symbol set_ that you want to use in your output word. For example, `SAX(10, -2:2)` or equivalently `SAX(10, [-2, 1, 0, 1, 2])` will give you an alphabet size of 5 where the symbols will be the numbers -2 through 2 inclusive.)
 2. Pass that approximator and your data (presumably normalized -- see below) into the `encode()` function. Or if you prefer, use `approximate()` which is an alias for `encode()`.
 3. Your output will be a `Word <: AbstractVector` composed of instances of the symbol set defined in the approximator.
 
