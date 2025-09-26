@@ -36,22 +36,6 @@ function segments(values::AbstractVector, segment_lengths::Vector{Int})
 	end
 end
 
-# 707 ns
-function encode(sa::SymbolicApproximator, values::AbstractVector)
-	n = length(values)
-	w = word_size(sa)
-	segment_length = n ÷ w  # todo: handle case of not divisible
-	result = Vector{Float64}(undef, w)
-	@inbounds for i in 1:w
-		start = round(Int, (i - 1) * segment_length + 1)
-		stop = min(n, round(Int, i * segment_length))
-		segment = view(values, start:stop)
-		result[i] = _encode_segment(sa, segment)
-	end
-	return Word(sa, result)
-end
-
-# 696 ns
 function encode(sa::SymbolicApproximator, values::AbstractVector)
 	w = word_size(sa)
 	segs = segments(values, w)
