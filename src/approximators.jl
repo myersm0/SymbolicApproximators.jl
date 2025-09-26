@@ -20,9 +20,9 @@ breakpoints(sa::SymbolicApproximator) = sa.β
 cardinality(sa::SymbolicApproximator) = length(alphabet(sa))
 alphabet_size(sa::SymbolicApproximator) = cardinality(sa)
 
-function encode(::SymbolicApproximator, values::AbstractVector) end
+function encode(::Approximator, values::AbstractVector) end
 
-approximate(sa::SymbolicApproximator, values) = encode(sa, values)
+approximate(sa::Approximator, values) = encode(sa, values)
 
 
 
