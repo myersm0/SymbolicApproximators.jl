@@ -22,4 +22,7 @@ include("sax.jl")
 #include("delta.jl")
 export PAA, SAX #, OrdinalApproximator, DeltaApproximator
 
+include("show.jl")
+
 end
+
