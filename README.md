@@ -29,6 +29,17 @@ symbols = encode(approximator, normalized)
 # Result: ['d', 'e', 'c', 'a', 'b', 'd', 'e', 'c', 'a', 'b']
 ```
 
+Operations revolve around this basic workflow:
+1. Define a `SymbolicApproximator` with integer arguments for _word size_ (i.e., the number of segments) and _alphabet size_ (also called cardinality), respectively. For example, `SAX(10, 5)`.
+  - Alternatively instead of specifying an alphabet _length_, you can directly pass in the _symbol set_ that you want to use in your output word. For example, `SAX(10, -2:2)` or equivalently `SAX(10, [-2, 1, 0, 1, 2])` will give you an alphabet size of 5 where the symbols will be the numbers -2 through 2 inclusive.)
+2. Pass that approximator and your (presumably normalized) data into the `encode()` function.
+3. Your output will be a `Word <: AbstractVector` composed of instances of the symbol set defined in the approximator.
+
+Coming soon there will be additional functionality such as:
+- more algorithms implemented
+- distance functions (using [Distances.jl](https://github.com/JuliaStats/Distances.jl))
+- other functions depending on algorithm, such numerosity reduction and permutation entropy
+
 ## License
 
 MIT
