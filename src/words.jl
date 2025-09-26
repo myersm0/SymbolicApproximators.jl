@@ -1,5 +1,5 @@
 
-struct Word{A, T} <: AbstractVector{T}
+struct Word{A <: AbstractApproximator, T} <: AbstractVector{T}
 	approximator::Ref{A}
 	symbols::Vector{T}
 end
