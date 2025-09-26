@@ -1,7 +1,8 @@
 # SymbolicApproximators
 A Julia package implementing Symbolic Aggregate approXimators (SAX) and related methods for symbolic time series discretization and dimension reduction.
 
-In particular we have or will implement the following algorithms:
+In particular we have implemented (or are in the process of doing so) the following algorithms:
+| |Algorithm|
 |-|:------------------------------------------------------------------------------------------------|
 |☑|Piecewise Aggregate Approximation (PAA) (todo: find reference)|
 |☑|Symbolic Aggregate approXimation (SAX) ([Lin et al 2003](https://www.cs.ucr.edu/~eamonn/SAX.pdf))|
