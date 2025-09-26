@@ -1,7 +1,6 @@
 
 module SymbolicApproximators
 
-using LinearAlgebra
 using Distributions
 using StatsBase
 

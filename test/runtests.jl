@@ -1,7 +1,6 @@
 using SymbolicApproximators
 using StatsBase
 using Random
-using LinearAlgebra
 using Test
 
 @testset "SAX paper verification tests" begin
