@@ -24,8 +24,7 @@ normalized = (signal .- mean(signal)) ./ std(signal, corrected = false)
 
 approximator = SAX(10, 5)  # discretize using SAX with 10 segments, 5 symbols
 symbols = encode(approximator, normalized)
-# Result: ['c', 'd', 'e', 'd', 'c', 'b', 'a', 'b', 'c', 'd']
-
+# Result: ['d', 'e', 'c', 'a', 'b', 'd', 'e', 'c', 'a', 'b']
 ```
 
 ## License
