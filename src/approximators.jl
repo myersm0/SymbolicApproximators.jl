@@ -1,14 +1,14 @@
 
-abstract type Approximator{T} end
-abstract type ContinuousApproximator{T} <: Approximator{T} end
-abstract type SymbolicApproximator{T, A} <: Approximator{T} end
+abstract type AbstractApproximator{T} end
+abstract type ContinuousApproximator{T} <: AbstractApproximator{T} end
+abstract type SymbolicApproximator{T, A} <: AbstractApproximator{T} end
 
 abstract type PreprocessingStyle end
 struct NoPreprocessing <: PreprocessingStyle end
 struct Normalize <: PreprocessingStyle end
 
-word_size(a::Approximator) = a.w
-Base.eltype(::Approximator{T}) where T = T
+word_size(a::AbstractApproximator) = a.w
+Base.eltype(::AbstractApproximator{T}) where T = T
 
 alphabet(sa::ContinuousApproximator{T}) where T = T(Inf)
 breakpoints(sa::ContinuousApproximator) = nothing
@@ -20,9 +20,9 @@ breakpoints(sa::SymbolicApproximator) = sa.β
 cardinality(sa::SymbolicApproximator) = length(alphabet(sa))
 alphabet_size(sa::SymbolicApproximator) = cardinality(sa)
 
-function encode(::Approximator, values::AbstractVector) end
+function encode(::AbstractApproximator, values::AbstractVector) end
 
-approximate(sa::Approximator, values) = encode(sa, values)
+approximate(sa::AbstractApproximator, values) = encode(sa, values)
 
 
 
