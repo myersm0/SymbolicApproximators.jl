@@ -15,6 +15,8 @@ In particular we have implemented (or are in the process of doing so) the follow
 Note that the first one, PAA, is actually a continuous rather than a symbolic representation, but we include it in the package because all the SAX variants depend on it.
 
 ## Usage
+Note that some algorithms expect preprocessed inputs. Specifically, SAX and variants expect the data to be normalized with a mean of 0, standard deviation of 1. We deliberately leave it to the user to handle such preprocessing where necessary, mainly because there are a number of ways you can do it: maybe your data already happens to be normally distributed in this manner, or maybe you have streaming data and need to do online normalization, etc.
+
 ```julia
 using SymbolicApproximators
 using StatsBase
