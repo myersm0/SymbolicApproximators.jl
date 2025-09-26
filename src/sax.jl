@@ -20,11 +20,9 @@ function SAX(w::Integer, cardinality::Integer)
 end
 
 function _encode_segment(sax::SAX, values::AbstractVector{Float64})
-	μ = mean(values)
-	σ = std(values, corrected = false)
-	# todo: handle case of very small sigma
-	normalized = (values .- μ) ./ σ
-	return _encode_segment(PAA(), normalized)
+	return _encode_segment(PAA(), values)
 end
+
+
 
 

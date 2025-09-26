@@ -11,7 +11,7 @@ using Test
 		
 		# basic discretization
 		sax = SAX(10, 3)  # 10 segments, 3 symbols (a,b,c)
-		symbols = discretize(sax, signal)
+		symbols = encode(sax, signal)
 		@test length(symbols) == 10
 		@test all(s in ['a', 'b', 'c'] for s in symbols)
 		
