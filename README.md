@@ -32,7 +32,7 @@ Usage revolves around this basic workflow:
     - A `Word` simply holds a vector of the symbols representing your output, along with a reference to the `SymbolicApproximator` that generated it (to inform things like the computation of distance between two `Word`s, for examle, which may be algorithm-dependent).
     - Since `Word` extends `AbstractVector`, you can simply use it as such.
 
-Note that some algorithms expect preprocessed inputs. Specifically, SAX and variants expect the data to be normalized with a mean of 0, standard deviation of 1. We deliberately leave it to the user to handle such preprocessing where necessary, mainly because there are a number of ways you can do it: maybe your data already happens to be normally distributed in this manner, or maybe you have streaming data and need to do online normalization, etc.
+Note that some algorithms expect preprocessed inputs. Specifically, SAX and variants expect the data to be normalized with a mean of 0, standard deviation of 1. It's left to the user to handle such preprocessing where necessary, mainly because there are a number of ways you can do it, depending on your situation: maybe your data already happens to be normally distributed in this manner, or maybe you have streaming data and need to do online normalization, etc.
 
 ```julia
 using SymbolicApproximators
