@@ -8,7 +8,7 @@ end
 function SAX(w::Integer, α::AbstractVector{T}) where T
 	cardinality = length(α)
 	cardinality > 1 || error("cardinality must be at least 2")
-	β = quantile.(Normal(), (1:cardinality-1) ./ cardinality)
+	β = [-Inf; quantile.(Normal(), (1:cardinality-1) ./ cardinality)]
 	return SAX{T, typeof(α)}(w, α, β)
 end
 

@@ -1,6 +1,7 @@
 
 module SymbolicApproximators
 
+using Distances
 using Distributions
 using StatsBase
 
