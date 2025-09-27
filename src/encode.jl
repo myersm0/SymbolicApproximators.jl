@@ -42,11 +42,18 @@ function encode(sa::ContinuousApproximator, values::AbstractVector)
 	return [_encode_segment(sa, seg) for seg in segs]
 end
 
-function encode(sa::SymbolicApproximator, values::AbstractVector)
+function encode(sa::SAX, values::AbstractVector)
 	w = word_size(sa)
 	segs = segments(values, w)
 	return Word(sa, [_encode_segment(sa, seg) for seg in segs])
 end
+
+function encode(sa::ESAX, values::AbstractVector)
+	w = word_size(sa)
+	segs = segments(values, w)
+	return Word(sa, vcat([_encode_segment(sa, seg) for seg in segs]...))
+end
+
 
 
 
