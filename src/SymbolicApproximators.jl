@@ -22,6 +22,9 @@ include("sax.jl")
 #include("delta.jl")
 export PAA, SAX #, OrdinalApproximator, DeltaApproximator
 
+include("distances.jl")
+export evaluate
+
 include("show.jl")
 
 end
