@@ -26,7 +26,7 @@ function _encode_segment(sa::ESAX, values::AbstractVector{Float64})
 	meanval = mean(values)
 	pmid = (1 + length(values)) ÷ 2   # midpoint of segment (ESAX Eq. 2)
 	perm = sortperm([pmin, pmid, pmax])
-	return [values[pmin], meanval, values[pmax]][perm]
+	return SVector{3, Float64}([values[pmin], meanval, values[pmax]][perm])
 end
 
 

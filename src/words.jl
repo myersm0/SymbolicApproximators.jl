@@ -19,6 +19,16 @@ function Word(sa::SA, values::AbstractVector) where SA <: SymbolicApproximator
 	return Word{SA, Int}(Ref(sa), indices)
 end
 
+function Word(sa::SA, values::AbstractVector) where SA <: ESAX
+	β = breakpoints(sa)
+	n = length(values)
+	indices = Vector{SVector{3, Int}}(undef, n)
+	for (i, v) in enumerate(values)
+		indices[i] = SVector{3, Int}(searchsortedlast(β, vi) for vi in v)
+	end
+	return Word{SA, SVector{3, Int}}(Ref(sa), indices)
+end
+
 Base.keys(w::Word{<:ContinuousApproximator, Float64}) = Base.OneTo(length(w.data))
 Base.keys(w::Word{<:SymbolicApproximator, Int}) = w.data
 
@@ -29,6 +39,17 @@ function Base.values(w::Word{<:SymbolicApproximator, Int})
 	symbols = Vector{T}(undef, n)
 	@inbounds @simd for i in 1:n
 		symbols[i] = α[w.data[i]]
+	end
+	return symbols
+end
+
+function Base.values(w::Word{SA, SVector{3, Int}}) where SA <: ESAX
+	α = alphabet(w)
+	T = eltype(α)
+	n = length(w.data)
+	symbols = Vector{SVector{3, T}}(undef, n)
+	for (i, v) in enumerate(w.data)
+		symbols[i] = SVector{3, T}(α[vi] for vi in v)
 	end
 	return symbols
 end
