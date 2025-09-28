@@ -6,13 +6,13 @@ const MINDIST = MinDist  # spell it the way the papers do, if desired
 
 function Distances.evaluate(
 		dist::MinDist, 
-		word1::Word{<:ContinuousApproximator, T}, 
-		word2::Word{<:ContinuousApproximator, T}
-	) where T
+		word1::Word{<:ContinuousApproximator}, 
+		word2::Word{<:ContinuousApproximator}
+	)
 	word_size(word1) == word_size(word2) || error("Words must have same length")
 	word1.n == word2.n || error("Words must have the same n")
 	alphabet(word1) == alphabet(word2) || error("Words must have the same alphabet")
-	return euclidean(word1.symbols, word2.symbols) * sqrt(compression_rate(word1))
+	return euclidean(values(word1), values(word2)) * sqrt(compression_rate(word1))
 end
 
 function Distances.evaluate(
