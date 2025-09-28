@@ -36,10 +36,11 @@ function segments(values::AbstractVector, segment_lengths::Vector{Int})
 	end
 end
 
-function encode(sa::ContinuousApproximator, values::AbstractVector)
-	w = word_size(sa)
+function encode(ca::ContinuousApproximator, values::AbstractVector)
+	n = length(values)
+	w = word_size(ca)
 	segs = segments(values, w)
-	return [_encode_segment(sa, seg) for seg in segs]
+	return Word(ca, [_encode_segment(ca, seg) for seg in segs], n)
 end
 
 function encode(sa::SymbolicApproximator, values::AbstractVector)
