@@ -2,6 +2,13 @@
 struct MinDist <: Metric end
 const MINDIST = MinDist  # spell it the way the papers do, if desired
 
+"""
+    mindist(word1, word2)
+
+Evaluate the MINDIST between two words.
+"""
+mindist(word1, word2) = evaluate(MinDist(), word1, word2)
+
 # todo: factor out checking of n, word size, etc
 
 function Distances.evaluate(
