@@ -26,12 +26,10 @@ Usage revolves around this basic workflow:
     - **word size**, i.e. the number of segments to use, or in other words the desired output length or dimensionality.
     - **alphabet size**, also called cardinality. This refers to the number of symbols (`Char`s by default) that you want to use.
         - Alternatively instead of specifying an alphabet _length_, you can directly pass in the _symbol set_ that you want to use in your output word. For example, `SAX(10, -2:2)` will give you an alphabet size of 5 where the symbols will be the integers -2 through 2 inclusive.
-3. Pass that approximator and your data (presumably normalized -- see below) into the function **`encode(::SymbolicApproximator, ::AbstractVector)`**. Or if you prefer, use `approximate()` which is an alias for `encode()`.
-4. Your output will be a **`Word`** composed of instances of the symbol set defined in the approximator.
+2. Pass that approximator and your data (presumably normalized -- see below) into the function **`encode(::SymbolicApproximator, ::AbstractVector)`**. Or if you prefer, use `approximate()` which is an alias for `encode()`.
+3. Your output will be a **`Word`** composed of instances of the symbol set defined in the approximator.
     - A `Word` holds a representation of your encoded output, along with a reference to the `SymbolicApproximator` that generated it (to inform things like the computation of distance between two `Word`s, for example, which may be algorithm-dependent).
-    - Internally, a `Word` stores integer indices into the alphabet of symbols, rather than the symbols themselves.
-        - use `keys(w::Word)` to get the integer indices
-        - use `values(w::Word)` to get generate a vector of the symbols
+
 
 Note that some algorithms expect preprocessed inputs. Specifically, SAX and variants expect the data to be normalized with a mean of 0, standard deviation of 1. It's left to the user to handle such preprocessing where necessary, mainly because there are a number of ways you can do it, depending on your situation: maybe your data already happens to be normally distributed in this manner, or maybe you have streaming data and need to do online normalization, etc.
 
@@ -45,18 +43,48 @@ julia> normalized = (signal .- mean(signal)) ./ std(signal, corrected = false)
 julia> approximator = SAX(10, 5)  # discretize using SAX with 10 segments, 5 symbols
 julia> symbols = encode(approximator, normalized)
 SAX Word: "decabdecab"
+```
 
-julia> keys(symbols)[1:3]
-3-element Vector{Int64}:
+Internally, a `Word` stores integer indices into the alphabet of symbols, rather than the symbols themselves. Two accessors are provided to retrieve the contents:
+- use `keys(w::Word)` to get the integer indices
+- use `values(w::Word)` to get generate a vector of the symbols
+
+```julia
+julia> keys(symbols)
+10-element Vector{Int64}:
  4
  5
- 3
+ ⋮
+ 2
 
-julia> values(symbols)[1:3]
+julia> values(symbols)
 10-element Vector{Char}:
  'd': ASCII/Unicode U+0064 (category Ll: Letter, lowercase)
  'e': ASCII/Unicode U+0065 (category Ll: Letter, lowercase)
- 'c': ASCII/Unicode U+0063 (category Ll: Letter, lowercase)
+ ⋮
+ 'b': ASCII/Unicode U+0062 (category Ll: Letter, lowercase)
+
+julia> width(symbols)
+1
+```
+
+Note the last operation there, `width`. Most algorithms produce `Word`s with a single symbol per position, but some (such as ESAX) represent multiple symbols in each position. We'll refer to this as a word's _width_. ESAX, for example, has a `width` of 3:
+```julia
+julia> esax = ESAX(10, 5)
+ESAX(10, 5)
+
+julia> symbols = encode(esax, normalized)
+ESAX Word: SVector{3, Char}[['c', 'd', 'e'], ['e', 'e', 'e'], …, ['a', 'b', 'c']]
+
+julia> values(symbols)
+10-element Vector{SVector{3, Char}}:
+ ['c', 'd', 'e']
+ ['e', 'e', 'e']
+ ⋮
+ ['a', 'b', 'c']
+
+julia> width(symbols)
+3
 ```
 
 
