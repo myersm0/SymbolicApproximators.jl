@@ -1,20 +1,19 @@
 
-struct SAX{T, A <: AbstractVector{T}} <: SymbolicApproximator{T, A}
+struct SAX{T} <: SymbolicApproximator{T}
 	w::Union{Nothing, Int}  # word size
-	α::A                    # alphabet
+	α::Vector{T}            # alphabet
 	β::Vector{Float64}      # breakpoints
 end
 
+# todo: enforce cardinality >= 2
 function SAX(w::Integer, α::AbstractVector{T}) where T
 	cardinality = length(α)
-	cardinality > 1 || error("cardinality must be at least 2")
 	β = [-Inf; quantile.(Normal(), (1:cardinality-1) ./ cardinality)]
-	return SAX{T, typeof(α)}(w, α, β)
+	return SAX{T}(w, α, β)
 end
 
+# todo: enforce alphabet size <= 26 for this method
 function SAX(w::Integer, cardinality::Integer)
-	# todo: more helpful error msg
-	1 < cardinality <= 26 || error("invalid alphabet size")
 	α = 'a':('a' + cardinality - 1)
 	return SAX(w, α)
 end
@@ -23,6 +22,6 @@ function _encode_segment(sax::SAX, values::AbstractVector{Float64})
 	return _encode_segment(PAA(), values)
 end
 
-
+width(::SAX) = 1
 
 

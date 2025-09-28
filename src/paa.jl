@@ -10,3 +10,4 @@ function _encode_segment(::PAA, values::AbstractVector{<:Real})
 	return mean(values)
 end
 
+width(::PAA) = 1

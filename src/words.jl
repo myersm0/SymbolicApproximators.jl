@@ -1,32 +1,26 @@
 
-struct Word{A <: AbstractApproximator, T}
-	approximator::Ref{A}
-	data::Vector{T}
+struct Word{A <: AbstractApproximator, T, W}
+	approximator::Ref{A}       # ref to what generated the Word
+	data::Vector{T}            # the main content (varies by approximator)
+	n::Int                     # number of timepoints in the original time series
 end
 
-function Word(ca::CA, values::AbstractVector) where CA <: ContinuousApproximator
-	return Word{CA, Float64}(Ref(ca), float_values)
+function Word(
+		ca::CA, values::AbstractVector, n::Integer
+	) where CA <: ContinuousApproximator
+	return Word{CA, Float64, width(CA)}(Ref(ca), values, 1, n)
 end
 
-function Word(sa::SA, values::AbstractVector) where SA <: SymbolicApproximator
+function Word(
+		sa::SA, values::AbstractVector, n::Integer
+	) where SA <: SymbolicApproximator
 	β = breakpoints(sa)
-	n = length(values)
-	indices = Vector{Int}(undef, n)
+	indices = Vector{Int}(undef, length(values))
 	@inbounds @simd for i in eachindex(values)
 		v = Float64(values[i])
 		indices[i] = searchsortedlast(β, v)
 	end
-	return Word{SA, Int}(Ref(sa), indices)
-end
-
-function Word(sa::SA, values::AbstractVector) where SA <: ESAX
-	β = breakpoints(sa)
-	n = length(values)
-	indices = Vector{SVector{3, Int}}(undef, n)
-	for (i, v) in enumerate(values)
-		indices[i] = SVector{3, Int}(searchsortedlast(β, vi) for vi in v)
-	end
-	return Word{SA, SVector{3, Int}}(Ref(sa), indices)
+	return Word{SA, Int, width(sa)}(Ref(sa), indices, n)
 end
 
 Base.keys(w::Word{<:ContinuousApproximator, Float64}) = Base.OneTo(length(w.data))
@@ -43,7 +37,7 @@ function Base.values(w::Word{<:SymbolicApproximator, Int})
 	return symbols
 end
 
-function Base.values(w::Word{SA, SVector{3, Int}}) where SA <: ESAX
+function Base.values(w::Word{SA, SVector{3, Int}, 3}) where SA <: SymbolicApproximator
 	α = alphabet(w)
 	T = eltype(α)
 	n = length(w.data)
@@ -59,11 +53,15 @@ Base.values(w::Word{<:ContinuousApproximator, Float64}) = w.data
 alphabet(w::Word) = alphabet(w.approximator[])
 breakpoints(w::Word) = breakpoints(w.approximator[])
 cardinality(w::Word) = cardinality(w.approximator[])
+alphabet_size(w::Word) = alphabet_size(w.approximator[])
 word_size(w::Word) = word_size(w.approximator[])
+width(w::Word{A, T, W}) where {A, T, W} = W
+compression_rate(n, w, width = 1) = sqrt(n / (w * width))
+compression_rate(w::Word) = compression_rate(w.n, word_size(w), width(w))
 
-Base.length(w::Word) = length(w.data)
+Base.length(w::Word) = word_size(w)
 Base.size(w::Word) = (length(w),)
-Base.eltype(::Word{A, T}) where {A, T} = T
+Base.eltype(::Word{A, T, W}) where {A, T, W} = T
 
 function Base.getindex(w::Word{<:ContinuousApproximator}, args...)
 	return getindex(w.data, args...)
@@ -87,7 +85,7 @@ end
 Base.lastindex(w::Word) = length(w)
 
 Base.:(==)(w1::Word, w2::Word) = 
-	w1.approximator[] == w2.approximator[] && w1.data == w2.data
+	w1.approximator[] == w2.approximator[] && w1.data == w2.data && w1.n == w2.n
 
 Base.hash(w::Word, h::UInt) = hash(w.data, hash(w.approximator[], h))
 
