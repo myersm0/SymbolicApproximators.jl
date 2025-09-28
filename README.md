@@ -21,6 +21,8 @@ Coming soon there will be additional functionality such as:
 - other functions depending on algorithm, such as numerosity reduction and permutation entropy
 
 ## Usage
+
+### Basic workflow
 Usage revolves around this basic workflow:
 1. Define a **`SymbolicApproximator`** with integer arguments for:
     - **word size**, i.e. the number of segments to use, or in other words the desired output length or dimensionality.
@@ -45,6 +47,7 @@ julia> word = encode(approximator, normalized)
 SAX Word: "decabdecab"
 ```
 
+### Extracting content from a `Word`
 Internally, a `Word` stores integer indices into the alphabet of symbols, rather than storing the symbols themselves. Two accessors are provided to retrieve the contents:
 - use **`keys(w::Word)`** to get the _integer indices_
 - use **`values(w::Word)`** to get a vector of the _symbols_
@@ -86,6 +89,36 @@ julia> values(word)
 
 julia> width(word)
 3
+```
+
+### Distances
+
+The [Distances.jl](https://github.com/JuliaStats/Distances.jl) framework is extended here to implement the MINDIST Euclidean-like distance algorithm for SAX and PAA words:
+
+``` julia
+julia> signal1 = (sin.(range(0, 4π, length=100)) |> x -> (x .- mean(x)) ./ std(x))
+julia> signal2 = (cos.(range(0, 4π, length=100)) |> x -> (x .- mean(x)) ./ std(x))
+julia> sax = SAX(50, 10)
+SAX(50, 10)
+
+julia> word1 = encode(sax, signal1)
+SAX Word: "fghiijjjiihgfdcbbaaaabccefhhijjjjiihgedcbbaaabbcde"
+
+julia> word2 = encode(sax, signal2)
+SAX Word: "jjiihgedcbbaaabbcdefhiijjjjiihfedcbbaaabbcdeghiijj"
+
+julia> evaluate(MinDist(), word1, word2)
+11.40858928469606
+
+# or, equivalently:
+julia> mindist(word1, word2)
+11.40858928469606
+
+# the "MINDIST" between two SAX words will very closely approach the true
+# Euclidean distance between the original time series, as we increase
+# the paramaters word size and alphabet size
+julia> euclidean(signal1, signal2)
+14.071247279470288
 ```
 
 
