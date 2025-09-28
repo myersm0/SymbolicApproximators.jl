@@ -17,12 +17,9 @@ export Word, width, compression_rate
 include("encode.jl")
 export encode
 
-# main algorithms
-include("paa.jl")
-include("sax.jl")
-include("esax.jl")
-#include("ordinal.jl")
-#include("delta.jl")
+include("methods/paa.jl")
+include("methods/sax.jl")
+include("methods/esax.jl")
 export PAA, SAX, ESAX
 
 include("distances.jl")
