@@ -41,30 +41,31 @@ julia> signal = sin.(range(0, 4π, length=100))
 julia> normalized = (signal .- mean(signal)) ./ std(signal, corrected = false)
 
 julia> approximator = SAX(10, 5)  # discretize using SAX with 10 segments, 5 symbols
-julia> symbols = encode(approximator, normalized)
+julia> word = encode(approximator, normalized)
 SAX Word: "decabdecab"
 ```
 
-Internally, a `Word` stores integer indices into the alphabet of symbols, rather than the symbols themselves. Two accessors are provided to retrieve the contents:
-- use `keys(w::Word)` to get the integer indices
-- use `values(w::Word)` to get generate a vector of the symbols
+Internally, a `Word` stores integer indices into the alphabet of symbols, rather than storing the symbols themselves. Two accessors are provided to retrieve the contents:
+- use **`keys(w::Word)`** to get the _integer indices_
+- use **`values(w::Word)`** to get a vector of the _symbols_
+    - note that the symbol values are mapped from integers upon demand when you call `values()`, so, if execution time is very important to you, you may find it sufficient to just use `keys()` instead
 
 ```julia
-julia> keys(symbols)
+julia> keys(word)
 10-element Vector{Int64}:
  4
  5
  ⋮
  2
 
-julia> values(symbols)
+julia> values(word)
 10-element Vector{Char}:
  'd': ASCII/Unicode U+0064 (category Ll: Letter, lowercase)
  'e': ASCII/Unicode U+0065 (category Ll: Letter, lowercase)
  ⋮
  'b': ASCII/Unicode U+0062 (category Ll: Letter, lowercase)
 
-julia> width(symbols)
+julia> width(word)
 1
 ```
 
@@ -73,17 +74,17 @@ Note the last operation there, `width`. Most algorithms produce `Word`s with a s
 julia> esax = ESAX(10, 5)
 ESAX(10, 5)
 
-julia> symbols = encode(esax, normalized)
+julia> word = encode(esax, normalized)
 ESAX Word: SVector{3, Char}[['c', 'd', 'e'], ['e', 'e', 'e'], …, ['a', 'b', 'c']]
 
-julia> values(symbols)
+julia> values(word)
 10-element Vector{SVector{3, Char}}:
  ['c', 'd', 'e']
  ['e', 'e', 'e']
  ⋮
  ['a', 'b', 'c']
 
-julia> width(symbols)
+julia> width(word)
 3
 ```
 
