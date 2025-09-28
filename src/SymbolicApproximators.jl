@@ -23,7 +23,7 @@ include("methods/esax.jl")
 export PAA, SAX, ESAX
 
 include("distances.jl")
-export evaluate
+export evaluate, MinDist, MINDIST
 
 include("show.jl")
 
