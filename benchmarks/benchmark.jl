@@ -6,7 +6,7 @@ using Chain
 # simple test series with high-freq peaks
 # (high-freq only on positive half)
 signal = @chain begin
-	range(0, 4π, length=500)
+	range(0, 4π, length = 500)
 	sin.(_) + 0.5*sin.(20*_) .* (cos.(_) .> 0)  
 	(_ .- mean(_)) ./ std(_)
 end
@@ -33,11 +33,6 @@ symbols = encode(model, signal)
 vals = values(symbols)
 
 
-signal = @chain begin
-	range(0, 2π, length=500)
-	sin.(_) + 0.5*sin.(20*_) .* (cos.(_) .> 0)  
-	(_ .- mean(_)) ./ std(_)
-end
 
 
 
