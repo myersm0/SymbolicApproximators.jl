@@ -2,9 +2,10 @@ using SymbolicApproximators
 using SuffixAutomata
 using StatsBase
 using GLMakie
+using Colors
 
-signal1 = (sin.(range(0, 4π, length=100)) |> x -> (x .- mean(x)) ./ std(x))
-signal2 = (cos.(range(0, 4π, length=100)) |> x -> (x .- mean(x)) ./ std(x))
+signal1 = sin.(range(0, 4π, length=100) |> x -> (x .- mean(x)) ./ std(x))
+signal2 = cos.(range(0, 4π, length=100) |> x -> (x .- mean(x)) ./ std(x))
 
 sax = SAX(50, 10)
 word1 = encode(sax, signal1)
@@ -17,7 +18,6 @@ common_pattern, position = lcs(string1, automaton)
 match_range = position:position+length(common_pattern)-1
 
 fig = Figure(; size = (1200, 800))
-
 ax1 = Axis(fig[1,1], title = "Original signals", ylabel = "Value")
 lines!(ax1, signal1, label = "sin", linewidth=3)
 lines!(ax1, signal2, label = "cos", linewidth=3)
@@ -50,8 +50,6 @@ lines!(
 ax2.xticks = [1, position, 50]
 axislegend(ax1)
 axislegend(ax2)
-
-save("sax_demo_lcs.png", fig)
 
 
 
