@@ -85,7 +85,7 @@ cardinality(w::Word) = cardinality(w.approximator[])
 alphabet_size(w::Word) = alphabet_size(w.approximator[])
 word_size(w::Word) = word_size(w.approximator[])
 width(w::Word{A, T, W}) where {A, T, W} = W
-compression_rate(n, w, width = 1) = sqrt(n / (w * width))
+compression_rate(n, w, width = 1) = n / (w * width)
 compression_rate(w::Word) = compression_rate(w.n, word_size(w), width(w))
 
 Base.length(w::Word) = word_size(w)

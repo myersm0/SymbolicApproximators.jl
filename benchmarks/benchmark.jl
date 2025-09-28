@@ -33,6 +33,11 @@ symbols = encode(model, signal)
 vals = values(symbols)
 
 
+signal = @chain begin
+	range(0, 2π, length=500)
+	sin.(_) + 0.5*sin.(20*_) .* (cos.(_) .> 0)  
+	(_ .- mean(_)) ./ std(_)
+end
 
 
 
