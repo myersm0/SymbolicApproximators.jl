@@ -25,7 +25,7 @@ lines!(ax1, signal2, label = "cos", linewidth=3)
 ax2 = Axis(
 	fig[2,1], 
 	title = "SAX words", 
-	subtitle = "(least common substring: '$(common_pattern)' at position $position)", 
+	subtitle = "(longest common substring: '$(common_pattern)' at position $position)", 
 	xlabel = "Position", 
 	ylabel = "Symbol"
 )
