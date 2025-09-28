@@ -22,6 +22,5 @@ function _encode_segment(sax::SAX, values::AbstractVector{Float64})
 	return _encode_segment(PAA(), values)
 end
 
-width(::SAX) = 1
-
+WordStyle(::SAX) = SimpleWord()
 

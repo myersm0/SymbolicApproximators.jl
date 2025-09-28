@@ -45,6 +45,7 @@ end
 function encode(sa::SymbolicApproximator, values::AbstractVector)
 	n = length(values)
 	w = word_size(sa)
+	W = width(WordStyle(sa))
 	segs = segments(values, w)
 	return Word(sa, [_encode_segment(sa, seg) for seg in segs], n)
 end

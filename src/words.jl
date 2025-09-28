@@ -1,18 +1,29 @@
 
+abstract type WordStyle end
+struct SimpleWord <: WordStyle end
+struct MultiWord{Int} <: WordStyle end
+
+width(::SimpleWord) = 1
+width(::MultiWord{W}) where W = W
+
 struct Word{A <: AbstractApproximator, T, W}
 	approximator::Ref{A}       # ref to what generated the Word
 	data::Vector{T}            # the main content (varies by approximator)
 	n::Int                     # number of timepoints in the original time series
 end
 
-function Word(
-		ca::CA, values::AbstractVector, n::Integer
-	) where CA <: ContinuousApproximator
-	return Word{CA, Float64, width(CA)}(Ref(ca), values, 1, n)
+function Word(a::AbstractApproximator, args...)
+	return Word(WordStyle(a), a, args...)
 end
 
 function Word(
-		sa::SA, values::AbstractVector, n::Integer
+		::SimpleWord, ca::CA, values::AbstractVector, n::Integer
+	) where CA <: ContinuousApproximator
+	return Word{CA, Float64, 1}(Ref(ca), values, n)
+end
+
+function Word(
+		::SimpleWord, sa::SA, values::AbstractVector, n::Integer
 	) where SA <: SymbolicApproximator
 	β = breakpoints(sa)
 	indices = Vector{Int}(undef, length(values))
@@ -20,13 +31,31 @@ function Word(
 		v = Float64(values[i])
 		indices[i] = searchsortedlast(β, v)
 	end
-	return Word{SA, Int, width(sa)}(Ref(sa), indices, n)
+	return Word{SA, Int, 1}(Ref(sa), indices, n)
 end
 
-Base.keys(w::Word{<:ContinuousApproximator, Float64}) = Base.OneTo(length(w.data))
-Base.keys(w::Word{<:SymbolicApproximator, Int}) = w.data
+function Word(
+		::MultiWord{W}, sa::SA, values::AbstractVector, n::Integer
+	) where {W, SA <: SymbolicApproximator}
+	β = breakpoints(sa)
+	indices = Vector{SVector{W, Int}}(undef, length(values))
+	for (i, v) in enumerate(values)
+		indices[i] = SVector{W, Int}(searchsortedlast(β, vi) for vi in v)
+	end
+	return Word{SA, SVector{W, Int}, W}(Ref(sa), indices, n)
+end
 
-function Base.values(w::Word{<:SymbolicApproximator, Int})
+WordStyle(w::Word{A, T, 1}) where {A, T} = SimpleWord()
+WordStyle(w::Word{A, T, W}) where {A, T, W} = MultiWord{W}()
+
+Base.keys(w::Word{<:ContinuousApproximator}) = Base.OneTo(length(w.data))
+Base.keys(w::Word{<:SymbolicApproximator}) = w.data
+
+function Base.values(w::Word)
+	return values(WordStyle(w), w)
+end
+	
+function Base.values(::SimpleWord, w::Word{<:SymbolicApproximator})
 	α = alphabet(w)
 	T = eltype(α)
 	n = length(w.data)
@@ -37,7 +66,7 @@ function Base.values(w::Word{<:SymbolicApproximator, Int})
 	return symbols
 end
 
-function Base.values(w::Word{SA, SVector{3, Int}, 3}) where SA <: SymbolicApproximator
+function Base.values(::MultiWord{W}, w::Word{<:SymbolicApproximator}) where W
 	α = alphabet(w)
 	T = eltype(α)
 	n = length(w.data)

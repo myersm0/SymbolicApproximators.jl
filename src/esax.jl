@@ -8,7 +8,7 @@ end
 function ESAX(w::Integer, α::AbstractVector{T}) where T
 	cardinality = length(α)
 	β = [-Inf; quantile.(Normal(), (1:cardinality-1) ./ cardinality)]
-	return ESAX{T, typeof(α)}(w, α, β)
+	return ESAX{T}(w, α, β)
 end
 
 function ESAX(w::Integer, cardinality::Integer)
@@ -25,20 +25,7 @@ function _encode_segment(sa::ESAX, values::AbstractVector{Float64})
 	return SVector{3, Float64}([values[pmin], meanval, values[pmax]][perm])
 end
 
-function Word(sa::SA, values::AbstractVector) where SA <: ESAX
-	β = breakpoints(sa)
-	n = length(values)
-	indices = Vector{SVector{3, Int}}(undef, n)
-	for (i, v) in enumerate(values)
-		indices[i] = SVector{3, Int}(searchsortedlast(β, vi) for vi in v)
-	end
-	return Word{SA, SVector{3, Int}, 3}(Ref(sa), indices, n)
-end
-
-width(::ESAX) = 3
-
-
-
+WordStyle(::ESAX) = MultiWord{3}()
 
 
 
