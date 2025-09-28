@@ -51,6 +51,11 @@ WordStyle(w::Word{A, T, W}) where {A, T, W} = MultiWord{W}()
 Base.keys(w::Word{<:ContinuousApproximator}) = Base.OneTo(length(w.data))
 Base.keys(w::Word{<:SymbolicApproximator}) = w.data
 
+"""
+    values(w::Word)
+
+Get a vector of w's symbolic representation.
+"""
 function Base.values(w::Word)
 	return values(WordStyle(w), w)
 end

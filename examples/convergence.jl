@@ -10,7 +10,7 @@ true_distance = euclidean(signal1, signal2)
 parameters = [(5, 5), (10, 10), (25, 25), (50, 50), (100, 100)]
 results = map(parameters) do (w, α)
 	sax = SAX(w, α)
-	sax_distance = evaluate(MinDist(), encode(sax, signal1), encode(sax, signal2))
+	sax_distance = mindist(encode(sax, signal1), encode(sax, signal2))
 	bits = w * log2(α)  # total bits needed to store the SAX representation
 	error = 100 * (true_distance - sax_distance) / true_distance
 	(bits = bits, error = error)
