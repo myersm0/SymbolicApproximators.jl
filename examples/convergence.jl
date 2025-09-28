@@ -3,8 +3,8 @@ using StatsBase
 using Distances
 using GLMakie
 
-signal1 = sin.(range(0, 4π, length = 100) |> x -> (x .- mean(x)) ./ std(x))
-signal2 = cos.(range(0, 4π, length = 100) |> x -> (x .- mean(x)) ./ std(x))
+signal1 = (sin.(range(0, 4π, length = 100)) |> x -> (x .- mean(x)) ./ std(x))
+signal2 = (cos.(range(0, 4π, length = 100)) |> x -> (x .- mean(x)) ./ std(x))
 true_distance = euclidean(signal1, signal2)
 
 parameters = [(5, 5), (10, 10), (25, 25), (50, 50), (100, 100)]
