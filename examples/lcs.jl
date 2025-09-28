@@ -4,8 +4,8 @@ using StatsBase
 using GLMakie
 using Colors
 
-signal1 = sin.(range(0, 4π, length=100) |> x -> (x .- mean(x)) ./ std(x))
-signal2 = cos.(range(0, 4π, length=100) |> x -> (x .- mean(x)) ./ std(x))
+signal1 = (sin.(range(0, 4π, length=100)) |> x -> (x .- mean(x)) ./ std(x))
+signal2 = (cos.(range(0, 4π, length=100)) |> x -> (x .- mean(x)) ./ std(x))
 
 sax = SAX(50, 10)
 word1 = encode(sax, signal1)
@@ -47,6 +47,7 @@ lines!(
 	linewidth = 15, color = RGBA(0, 0, 0, 0.3), label = "LCS"
 )
 
+ax2.yticks = (0:9, ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j"])
 ax2.xticks = [1, position, 50]
 axislegend(ax1)
 axislegend(ax2)
