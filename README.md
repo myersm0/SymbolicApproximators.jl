@@ -6,7 +6,7 @@ A Julia package implementing **Symbolic Aggregate approXimation (SAX)** and rela
 The following algorithms are implemented or under development:
 | |Algorithm|
 |-|:-------------------------------------------------------------------------------------------------|
-|☑|Piecewise Aggregate Approximation (PAA) ([Lin et al 2003](https://www.cs.ucr.edu/~eamonn/SAX.pdf))|
+|☑|Piecewise Aggregate Approximation (PAA) ([Keogh et al 2000](https://www.cs.ucr.edu/~eamonn/SAX.pdf) and [Yi et al 2000](https://dl.acm.org/doi/10.5555/645926.671689))|
 |☑|Symbolic Aggregate approXimation (SAX) ([Lin et al 2003](https://www.cs.ucr.edu/~eamonn/SAX.pdf))|
 |☐|Extended SAX (ESAX) (Lkhagva et al 2006)|
 |☐|Indexable SAX (iSAX) ([Shieh et al 2008](https://www.cs.ucr.edu/~eamonn/iSAX.pdf))|
