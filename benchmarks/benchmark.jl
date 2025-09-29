@@ -13,23 +13,23 @@ end
 
 @btime PAA(10)                    #     1 ns
 model = PAA(10)
-@btime encode($model, $signal)    #    86 ns
+@btime encode($model, $signal)    #    98 ns
 symbols = encode(model, signal)
 @btime values($symbols)           #     1 ns
 vals = values(symbols)
 
-@btime SAX(10, 5)                 #   120 ns
+@btime SAX(10, 5)                 #   130 ns
 model = SAX(10, 5)
-@btime encode($model, $signal)    #   156 ns
+@btime encode($model, $signal)    #   162 ns
 symbols = encode(model, signal)
-@btime values($symbols)           #   281 ns
+@btime values($symbols)           #    14 ns
 vals = values(symbols)
 
-@btime ESAX(10, 5)                #   118 ns
+@btime ESAX(10, 5)                #   108 ns
 model = ESAX(10, 5)
-@btime encode($model, $signal)    #  2782 ns
+@btime encode($model, $signal)    #  2815 ns
 symbols = encode(model, signal)
-@btime values($symbols)           # 24959 ns
+@btime values($symbols)           #    26 ns
 vals = values(symbols)
 
 
