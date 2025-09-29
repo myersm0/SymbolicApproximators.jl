@@ -104,17 +104,27 @@ The [Distances.jl](https://github.com/JuliaStats/Distances.jl) framework is exte
 ``` julia
 signal1 = (sin.(range(0, 4π, length=100)) |> x -> (x .- mean(x)) ./ std(x))
 signal2 = (cos.(range(0, 4π, length=100)) |> x -> (x .- mean(x)) ./ std(x))
+
+sax = SAX(50, 10)
 word1 = encode(sax, signal1)
 word2 = encode(sax, signal2)
 
 # Euclidean-like "MINDIST" between the approximated time series:
-evaluate(MinDist(), word1, word2)  # 11.40858928469606
+evaluate(MinDist(), word1, word2) # 11.4
 
 # or, equivalently:
-mindist(word1, word2)              # 11.40858928469606
+mindist(word1, word2)             # 11.4
 
 # true Euclidean distance between the original time series:
-euclidean(signal1, signal2)        # 14.071247279470288
+euclidean(signal1, signal2)       # 14.1
+
+# if we use SAX with a much higher alphabet size, we can get very close
+# to the true Euclidean distance:
+sax = SAX(50, 250)
+word1 = encode(sax, signal1)
+word2 = encode(sax, signal2)
+mindist(word1, word2)             # 13.9
+
 ```
 
 The MINDIST between two SAX or PAA words lower-bounds the true Euclidian distance, and will closely approach that distance (at reduced representational cost) as we increase
