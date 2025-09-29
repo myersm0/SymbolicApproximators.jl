@@ -61,25 +61,11 @@ function Base.values(w::Word)
 end
 	
 function Base.values(::SimpleWord, w::Word{<:SymbolicApproximator})
-	α = alphabet(w)
-	T = eltype(α)
-	n = length(w.data)
-	symbols = Vector{T}(undef, n)
-	@inbounds @simd for i in 1:n
-		symbols[i] = α[w.data[i]]
-	end
-	return symbols
+	return '`' .+ w.data
 end
 
 function Base.values(::MultiWord{W}, w::Word{<:SymbolicApproximator}) where W
-	α = alphabet(w)
-	T = eltype(α)
-	n = length(w.data)
-	symbols = Vector{SVector{3, T}}(undef, n)
-	for (i, v) in enumerate(w.data)
-		symbols[i] = SVector{3, T}(α[vi] for vi in v)
-	end
-	return symbols
+	return ['`' .+ v for v in w.data]
 end
 
 Base.values(w::Word{<:ContinuousApproximator, Float64}) = w.data

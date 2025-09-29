@@ -3,42 +3,37 @@ using SymbolicApproximators
 using BenchmarkTools
 using Chain
 
+const suite = BenchmarkGroup()
+
 # simple test series with high-freq peaks
 # (high-freq only on positive half)
 signal = @chain begin
-	range(0, 4π, length = 500)
+	range(0, 4π, length = 1000)
 	sin.(_) + 0.5*sin.(20*_) .* (cos.(_) .> 0)  
 	(_ .- mean(_)) ./ std(_)
 end
 
-@btime PAA(10)                    #     1 ns
-model = PAA(10)
-@btime encode($model, $signal)    #    86 ns
+model = PAA(50)
 symbols = encode(model, signal)
-@btime values($symbols)           #     1 ns
 vals = values(symbols)
+suite["PAA config"] = @benchmarkable PAA(10)
+suite["PAA encode"] = @benchmarkable encode($model, $signal)
+suite["PAA values"] = @benchmarkable values($symbols)
 
-@btime SAX(10, 5)                 #   120 ns
-model = SAX(10, 5)
-@btime encode($model, $signal)    #   156 ns
+model = SAX(50, 25)
 symbols = encode(model, signal)
-@btime values($symbols)           #   281 ns
 vals = values(symbols)
+suite["SAX config"] = @benchmarkable SAX(10, 5)
+suite["SAX encode"] = @benchmarkable encode($model, $signal)
+suite["SAX values"] = @benchmarkable values($symbols)
 
-@btime ESAX(10, 5)                #   118 ns
-model = ESAX(10, 5)
-@btime encode($model, $signal)    #  2782 ns
+model = ESAX(50, 25)
 symbols = encode(model, signal)
-@btime values($symbols)           # 24959 ns
 vals = values(symbols)
+suite["ESAX config"] = @benchmarkable ESAX(10, 5)
+suite["ESAX encode"] = @benchmarkable encode($model, $signal)
+suite["ESAX values"] = @benchmarkable values($symbols)
 
-
-
-
-
-
-
-
-
+run(suite)
 
 

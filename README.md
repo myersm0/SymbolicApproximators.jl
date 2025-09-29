@@ -32,8 +32,7 @@ Pkg.add("SymbolicApproximators")
 Usage revolves around this basic workflow:
 1. Define a **`SymbolicApproximator`** with integer arguments for:
     - **word size**, i.e. the number of segments to use, or in other words the desired output length or dimensionality.
-    - **alphabet size**, also called cardinality. This refers to the number of symbols (`Char`s by default) that you want to use.
-        - Alternatively instead of specifying an alphabet _length_, you can directly pass in the _symbol set_ that you want to use in your output word. For example, `SAX(10, -2:2)` will give you an alphabet size of 5 where the symbols will be the integers -2 through 2 inclusive.
+    - **alphabet size**, also called cardinality. This refers to the number of symbols (`Char`s) that you want to use.
 2. Pass that approximator and your data (presumably normalized -- see below) into the function **`encode(::SymbolicApproximator, ::AbstractVector)`**. Or if you prefer, use `approximate()` which is an alias for `encode()`.
 3. Your output will be a **`Word`** composed of instances of the symbol set defined in the approximator.
     - A `Word` holds a representation of your encoded output, along with a reference to the `SymbolicApproximator` that generated it (to inform things like the computation of distance between two `Word`s, for example, which may be algorithm-dependent).
@@ -57,7 +56,7 @@ Some algorithms expect preprocessed inputs. Specifically, SAX and variants expec
 The result of an `encode()` or `approximate()` call will be a `Word` struct. Internally, a `Word` stores integer indices into the alphabet of symbols, rather than storing the symbols themselves. Two accessors are provided to retrieve the contents:
 - use **`keys(w::Word)`** to get the _integer indices_
 - use **`values(w::Word)`** to get a vector of the _symbols_
-    - note that the symbol values are mapped from integers upon demand when you call `values()`, so, if execution time is very important to you, you may find it sufficient to just use `keys()` instead
+    - note that the symbol values are generated from integers upon demand when you call `values()`, so, if execution time is _very_ important to you, you may find it sufficient to just use `keys()` instead
 
 ```julia
 julia> keys(word)
