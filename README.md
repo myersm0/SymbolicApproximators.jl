@@ -20,6 +20,12 @@ Coming soon there will be additional functionality such as:
 - rolling window/segment functions to enable operations on streaming data
 - other functions depending on algorithm, such as numerosity reduction and permutation entropy
 
+## Installation
+```julia
+using Pkg
+Pkg.add("SymbolicApproximators")
+```
+
 ## Usage
 
 ### Basic workflow
@@ -31,9 +37,6 @@ Usage revolves around this basic workflow:
 2. Pass that approximator and your data (presumably normalized -- see below) into the function **`encode(::SymbolicApproximator, ::AbstractVector)`**. Or if you prefer, use `approximate()` which is an alias for `encode()`.
 3. Your output will be a **`Word`** composed of instances of the symbol set defined in the approximator.
     - A `Word` holds a representation of your encoded output, along with a reference to the `SymbolicApproximator` that generated it (to inform things like the computation of distance between two `Word`s, for example, which may be algorithm-dependent).
-
-
-Note that some algorithms expect preprocessed inputs. Specifically, SAX and variants expect the data to be normalized with a mean of 0, standard deviation of 1. It's left to the user to handle such preprocessing where necessary, mainly because there are a number of ways you can do it, depending on your situation: maybe your data already happens to be normally distributed in this manner, or maybe you have streaming data and need to do online normalization, etc.
 
 ```julia
 julia> using SymbolicApproximators
@@ -47,8 +50,11 @@ julia> word = encode(approximator, normalized)
 SAX Word: "decabdecab"
 ```
 
+### An important note about preprocessing
+Some algorithms expect preprocessed inputs. Specifically, SAX and variants expect the data to be normalized with a mean of 0, standard deviation of 1. It's left to the user to handle such preprocessing where necessary, mainly because there are a number of ways you can do it, depending on your situation: maybe your data already happens to be normally distributed in this manner, or maybe you have streaming data and need to do online normalization, etc.
+
 ### Extracting content from a `Word`
-Internally, a `Word` stores integer indices into the alphabet of symbols, rather than storing the symbols themselves. Two accessors are provided to retrieve the contents:
+The result of an `encode()` or `approximate()` call will be a `Word` struct. Internally, a `Word` stores integer indices into the alphabet of symbols, rather than storing the symbols themselves. Two accessors are provided to retrieve the contents:
 - use **`keys(w::Word)`** to get the _integer indices_
 - use **`values(w::Word)`** to get a vector of the _symbols_
     - note that the symbol values are mapped from integers upon demand when you call `values()`, so, if execution time is very important to you, you may find it sufficient to just use `keys()` instead
@@ -72,7 +78,7 @@ julia> width(word)
 1
 ```
 
-Note the last operation there, `width`. Most algorithms produce `Word`s with a single symbol per position, but some (such as ESAX) represent multiple symbols in each position. We'll refer to this as a word's _width_. ESAX, for example, has a `width` of 3:
+Note the last operation there, `width`. Most algorithms produce `Word`s with a single symbol per position, but some (such as ESAX) represent multiple symbols in each position. We'll refer to this as a word's _width_. ESAX, for example, has a width of 3:
 ```julia
 julia> esax = ESAX(10, 5)
 ESAX(10, 5)
@@ -96,24 +102,22 @@ julia> width(word)
 The [Distances.jl](https://github.com/JuliaStats/Distances.jl) framework is extended here to implement the MINDIST Euclidean-like distance algorithm for SAX and PAA words:
 
 ``` julia
-julia> signal1 = (sin.(range(0, 4π, length=100)) |> x -> (x .- mean(x)) ./ std(x))
-julia> signal2 = (cos.(range(0, 4π, length=100)) |> x -> (x .- mean(x)) ./ std(x))
-julia> sax = SAX(50, 10)
-julia> word1 = encode(sax, signal1)
-julia> word2 = encode(sax, signal2)
+signal1 = (sin.(range(0, 4π, length=100)) |> x -> (x .- mean(x)) ./ std(x))
+signal2 = (cos.(range(0, 4π, length=100)) |> x -> (x .- mean(x)) ./ std(x))
+word1 = encode(sax, signal1)
+word2 = encode(sax, signal2)
 
-julia> evaluate(MinDist(), word1, word2)
-11.40858928469606
+# Euclidean-like "MINDIST" between the approximated time series:
+evaluate(MinDist(), word1, word2)  # 11.40858928469606
 
 # or, equivalently:
-julia> mindist(word1, word2)
-11.40858928469606
+mindist(word1, word2)              # 11.40858928469606
 
-julia> euclidean(signal1, signal2)
-14.071247279470288
+# true Euclidean distance between the original time series:
+euclidean(signal1, signal2)        # 14.071247279470288
 ```
 
-The MINDIST between two SAX or PAA words lower-bounds the true Euclidian distance, and will very closely approach that distance (at reduced representational cost) as we increase
+The MINDIST between two SAX or PAA words lower-bounds the true Euclidian distance, and will closely approach that distance (at reduced representational cost) as we increase
 the paramaters for word size and/or alphabet size. The example file [convergence.jl](https://github.com/myersm0/SymbolicApproximators.jl/blob/main/examples/convergence.jl) in this repo demonstates that.
 
 ## License
