@@ -5,7 +5,6 @@ using Distances
 using Distributions
 using StatsBase
 using StaticArrays
-using OffsetArrays
 
 include("approximators.jl")
 export Approximator, ContinuousApproximator, SymbolicApproximator

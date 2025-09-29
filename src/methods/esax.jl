@@ -1,22 +1,16 @@
 
-struct ESAX{T} <: SymbolicApproximator{T}
+struct ESAX <: SymbolicApproximator
 	w::Union{Nothing, Int}  # word size
-	α::Vector{T}            # alphabet
+	a::UInt32               # alphabet size
 	β::Vector{Float64}      # breakpoints
 end
 
-function ESAX(w::Integer, α::AbstractVector{T}) where T
-	cardinality = length(α)
-	β = [-Inf; quantile.(Normal(), (1:cardinality-1) ./ cardinality)]
-	return ESAX{T}(w, α, β)
+function ESAX(w::Integer, a::Integer)
+	β = [-Inf; quantile.(Normal(), (1:a-1) ./ a)]
+	return ESAX(w, a, β)
 end
 
-function ESAX(w::Integer, cardinality::Integer)
-	α = 'a':('a' + cardinality - 1)
-	return ESAX(w, α)
-end
-
-function _encode_segment(sa::ESAX, values::AbstractVector{Float64})
+function _encode_segment(sa::ESAX, values::AbstractVector{<:Real})
 	pmin = argmin(values)
 	pmax = argmax(values)
 	meanval = mean(values)

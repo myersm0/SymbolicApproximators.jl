@@ -1,19 +1,17 @@
 
-abstract type AbstractApproximator{T} end
-abstract type ContinuousApproximator{T} <: AbstractApproximator{T} end
-abstract type SymbolicApproximator{T} <: AbstractApproximator{T} end
+abstract type AbstractApproximator end
+abstract type ContinuousApproximator <: AbstractApproximator end
+abstract type SymbolicApproximator <: AbstractApproximator end
 
 word_size(a::AbstractApproximator) = a.w
-Base.eltype(::AbstractApproximator{T}) where T = T
-
-alphabet(sa::ContinuousApproximator{T}) where T = T(Inf)
+alphabet(sa::ContinuousApproximator) = Inf
 breakpoints(sa::ContinuousApproximator) = nothing
 cardinality(sa::ContinuousApproximator) = nothing
-alphabet_size(sa::ContinuousApproximator{T}) where T = T(Inf)
+alphabet_size(sa::ContinuousApproximator) = Inf
 
-alphabet(sa::SymbolicApproximator) = sa.α
+alphabet(sa::SymbolicApproximator) = range('a'; length = sa.a)
 breakpoints(sa::SymbolicApproximator) = sa.β
-cardinality(sa::SymbolicApproximator) = length(alphabet(sa))
+cardinality(sa::SymbolicApproximator) = sa.a
 alphabet_size(sa::SymbolicApproximator) = cardinality(sa)
 
 """
