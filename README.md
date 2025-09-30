@@ -30,12 +30,12 @@ Pkg.add("SymbolicApproximators")
 
 ### Basic workflow
 Usage revolves around this basic workflow:
-1. Define a **`SymbolicApproximator`** with integer arguments for:
-    - **word size**, i.e. the number of segments to use, or in other words the desired output length or dimensionality.
-    - **alphabet size**, also called cardinality. This refers to the number of symbols (`Char`s) that you want to use.
-2. Pass that approximator and your data (presumably normalized -- see below) into the function **`encode(::SymbolicApproximator, ::AbstractVector)`**. Or if you prefer, use `approximate()` which is an alias for `encode()`.
-3. Your output will be a **`Word`** composed of instances of the symbol set defined in the approximator.
-    - A `Word` holds a representation of your encoded output, along with a reference to the `SymbolicApproximator` that generated it (to inform things like the computation of distance between two `Word`s, for example, which may be algorithm-dependent).
+1. **Preprocess your data**. See preprocessing section below. This package does not currently provide preprocessing utilities like z-normalization, but most algorithms assume it has been done.
+2. Define a **`SymbolicApproximator`** with integer arguments for:
+    - **word size**, i.e. the number of segments to use, or in other words the desired output length
+    - **alphabet size**, also called cardinality
+3. Pass that approximator and your normalized data into the function **`encode(::SymbolicApproximator, ::AbstractVector)`**.
+4. Your output will be a **`Word`** composed of instances of the symbol set defined in the approximator.
 
 ```julia
 julia> using SymbolicApproximators
@@ -51,6 +51,8 @@ SAX Word: "decabdecab"
 
 ### An important note about preprocessing
 Some algorithms expect preprocessed inputs. Specifically, SAX and variants expect the data to be normalized with a mean of 0, standard deviation of 1. It's left to the user to handle such preprocessing where necessary, mainly because there are a number of ways you can do it, depending on your situation: maybe your data already happens to be normally distributed in this manner, or maybe you have streaming data and need to do online normalization, etc.
+
+It's also left to the user whether and how the time series is to be divided into "subsequences" (i.e. a scheme where you will have multiple _words_ per time series), and, if so, whether to normalize each subsequence independently. The authors of SAX do so: "we normalize each time series (including subsequences) to have a mean of zero and a standard deviation of one." In addition they advise: "if the subsequence contains only one value, the standard deviation is not defined. More troublesome is the case where the subsequence is _almost_ constant [...]. We can easily deal with this problem, if the standard deviation of the sequence before normalization is below an epsilon ϵ, we simply assign the entire word to the middle-ranged alphabet."
 
 ### Extracting content from a `Word`
 The result of an `encode()` or `approximate()` call will be a `Word` struct. Internally, a `Word` stores integer indices into the alphabet of symbols, rather than storing the symbols themselves. Two accessors are provided to retrieve the contents:
