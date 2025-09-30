@@ -13,6 +13,7 @@ signal = @chain begin
 	(_ .- mean(_)) ./ std(_)
 end
 
+# 1 ns, 297 ns, 1 ns
 model = PAA(50)
 symbols = encode(model, signal)
 vals = values(symbols)
@@ -20,6 +21,7 @@ SUITE["PAA config"] = @benchmarkable PAA(50)
 SUITE["PAA encode"] = @benchmarkable encode($model, $signal)
 SUITE["PAA values"] = @benchmarkable values($symbols)
 
+# 225 ns, 688 ns, 24 ns
 model = SAX(50, 25)
 symbols = encode(model, signal)
 vals = values(symbols)
@@ -27,6 +29,7 @@ SUITE["SAX config"] = @benchmarkable SAX(50, 25)
 SUITE["SAX encode"] = @benchmarkable encode($model, $signal)
 SUITE["SAX values"] = @benchmarkable values($symbols)
 
+# 225 ns, 1906 ns, 94 ns
 model = ESAX(50, 25)
 symbols = encode(model, signal)
 vals = values(symbols)
