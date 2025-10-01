@@ -45,6 +45,25 @@ end
 znormalize(x) = (x .- mean(x)) ./ std(x)
 
 @testset "Distances" begin
+	import SymbolicApproximators: symbol_distance
+	@testset "Symbol distances" begin
+		sax = SAX(10, 4)
+		ground_truth = [
+			0.00 0.00 0.67 1.35
+			0.00 0.00 0.00 0.67
+			0.67 0.00 0.00 0.00
+			1.35 0.67 0.00 0.00
+		]
+		for i in 0:3
+			for j in 0:3
+				@test isapprox(
+					round(symbol_distance(sax, i, j), digits = 2),
+					ground_truth[i+1, j+1]
+				)
+			end
+		end
+	end
+
 	ts1 = sin.(range(0, 4π, length = 100)) |> znormalize
 	ts2 = cos.(range(0, 4π, length = 100)) |> znormalize
 	euclidean_dist = evaluate(Euclidean(), ts1, ts2)
