@@ -46,7 +46,6 @@ function Distances.evaluate(
 end
 
 function symbol_distance(approximator::SAX, i::Int, j::Int)
-	α = alphabet(approximator)
 	β = breakpoints(approximator)
 	if abs(i - j) <= 1
        return 0.0
@@ -54,14 +53,11 @@ function symbol_distance(approximator::SAX, i::Int, j::Int)
 	if i > j
 		i, j = j, i
 	end
-	i += 1
-	if i > length(β)
-		i = length(β)
-	end
-	if j > length(β)
-		j = length(β)
-	end
-   return abs(β[i] - β[j])
+	lo = 0
+	hi = length(β)
+	i = clamp(i, lo:hi)
+	j = clamp(j, lo:hi)
+   return β[j] - β[i+1]
 end
 
 

@@ -7,7 +7,7 @@ end
 
 # todo: enforce cardinality >= 2
 function SAX(w::Integer, a::Integer)
-	β = [-Inf; quantile.(Normal(), (1:a-1) ./ a)]
+	β = quantile.(Normal(), (1:a-1) ./ a)
 	return SAX(w, a, β)
 end
 

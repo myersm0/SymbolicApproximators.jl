@@ -20,7 +20,7 @@ znormalize(x) = (x .- mean(x)) ./ std(x)
 		)
 		for (siz, expected) in expected_breakpoints
 			sax = SAX(10, siz)
-			@test all(abs.(breakpoints(sax)[2:end] .- expected) .< 0.01)
+			@test all(abs.(breakpoints(sax) .- expected) .< 0.01)
 		end
 	end
 	
@@ -123,6 +123,7 @@ znormalize(x) = (x .- mean(x)) ./ std(x)
 		combined = ws .* as
 		@test corspearman(combined, errors) < -0.7
 	end
+
 end	
 
 

@@ -61,11 +61,11 @@ function Base.values(w::Word)
 end
 	
 function Base.values(::SimpleWord, w::Word{<:SymbolicApproximator})
-	return '`' .+ w.data
+	return 'a' .+ w.data
 end
 
 function Base.values(::MultiWord{W}, w::Word{<:SymbolicApproximator}) where W
-	return ['`' .+ v for v in w.data]
+	return ['a' .+ v for v in w.data]
 end
 
 Base.values(w::Word{<:ContinuousApproximator, Float64}) = w.data
@@ -88,8 +88,7 @@ function Base.getindex(w::Word{<:ContinuousApproximator}, args...)
 end
 
 function Base.getindex(w::Word{<:SymbolicApproximator}, args...)
-	@boundscheck checkbounds(w.data, args...)
-	return getindex(alphabet(w), getindex(w.data, args...))
+	return 'a' + getindex(w.data, args...)
 end
 
 function Base.iterate(w::Word{<:ContinuousApproximator}, state = 1)
@@ -99,7 +98,7 @@ end
 
 function Base.iterate(w::Word{<:SymbolicApproximator}, state = 1)
 	state > length(w) && return nothing
-	return (alphabet(w)[w.data[state]], state + 1)
+	return ('a' + w.data[state], state + 1)
 end
 
 Base.lastindex(w::Word) = length(w)
