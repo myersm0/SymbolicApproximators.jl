@@ -1,6 +1,7 @@
 using SymbolicApproximators
 using StatsBase
 using Distances
+using Distributions
 using Random
 using Test
 
@@ -25,18 +26,16 @@ znormalize(x) = (x .- mean(x)) ./ std(x)
 	end
 	
 	@testset "Equiprobability of symbols" begin
-		# paper claims normalized data produces equiprobable symbols
-		Random.seed!(42)
 		n_samples = 10000
-		data = sort(randn(n_samples))  # Standard normal data
-		sax = SAX(1000, 5)  # 5 symbols
+		sax = SAX(1000, 5)
+		# make equal-size bins spanning the real line quantiles
+		quantiles = range(0, 1; length = n_samples+2)[2:end-1]
+		data = quantile.(Normal(), quantiles)  # inverse CDF of Gaussian
 		symbols = encode(sax, data)
 		counts = countmap(symbols)
-		# each symbol should appear ~20% of the time (1000/5 = 200)
 		expected_count = length(symbols) / 5
 		for (sym, count) in counts
-			# tolerance for randomness
-			@test abs(count - expected_count) < expected_count * 0.1
+			@test count == expected_count
 		end
 	end
 
