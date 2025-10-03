@@ -6,9 +6,9 @@ struct MultiWord{Int} <: WordStyle end
 width(::SimpleWord) = 1
 width(::MultiWord{W}) where W = W
 
-struct Word{A <: AbstractApproximator, T, W}
+struct Word{A <: AbstractApproximator, T <: AbstractArray, W}
 	approximator::Ref{A}       # ref to what generated the Word
-	data::Vector{T}            # the main content (varies by approximator)
+	data::T                    # the main content (varies by approximator)
 	n::Int                     # number of timepoints in the original time series
 end
 
@@ -19,7 +19,7 @@ end
 function Word(
 		::SimpleWord, ca::CA, values::AbstractVector, n::Integer
 	) where CA <: ContinuousApproximator
-	return Word{CA, Float64, 1}(Ref(ca), values, n)
+	return Word{CA, Vector{Float64}, 1}(Ref(ca), values, n)
 end
 
 function Word(
@@ -31,7 +31,7 @@ function Word(
 		v = Float64(values[i])
 		indices[i] = searchsortedlast(β, v)
 	end
-	return Word{SA, Int, 1}(Ref(sa), indices, n)
+	return Word{SA, Vector{Int}, 1}(Ref(sa), indices, n)
 end
 
 function Word(
@@ -42,7 +42,7 @@ function Word(
 	for (i, v) in enumerate(values)
 		indices[i] = SVector{W, Int}(searchsortedlast(β, vi) for vi in v)
 	end
-	return Word{SA, SVector{W, Int}, W}(Ref(sa), indices, n)
+	return Word{SA, Vector{SVector{W, Int}}, W}(Ref(sa), indices, n)
 end
 
 WordStyle(w::Word{A, T, 1}) where {A, T} = SimpleWord()
@@ -68,7 +68,7 @@ function Base.values(::MultiWord{W}, w::Word{<:SymbolicApproximator}) where W
 	return ['a' .+ v for v in w.data]
 end
 
-Base.values(w::Word{<:ContinuousApproximator, Float64}) = w.data
+Base.values(w::Word{<:ContinuousApproximator}) = w.data
 
 alphabet(w::Word) = alphabet(w.approximator[])
 breakpoints(w::Word) = breakpoints(w.approximator[])
@@ -81,7 +81,7 @@ compression_rate(w::Word) = compression_rate(w.n, word_size(w), width(w))
 
 Base.length(w::Word) = word_size(w)
 Base.size(w::Word) = (length(w),)
-Base.eltype(::Word{A, T, W}) where {A, T, W} = T
+Base.eltype(::Word{A, T, W}) where {A, T, W} = eltype(T)
 
 function Base.getindex(w::Word{<:ContinuousApproximator}, args...)
 	return getindex(w.data, args...)
