@@ -146,3 +146,103 @@ end
 
 
 
+@testset "Mutating encode!" begin
+	ts = sin.(range(0, 4π, length = 100)) |> znormalize
+	
+	@testset "SAX encode!" begin
+		sax = SAX(10, 5)
+		dest = Vector{Int}(undef, 10)
+		word_mutating = encode!(sax, dest, ts)
+		word_regular = encode(sax, ts)
+		@test keys(word_mutating) == keys(word_regular)
+		@test values(word_mutating) == values(word_regular)
+		@test dest === word_mutating.data  # verify no allocation
+	end
+	
+	@testset "PAA encode!" begin
+		paa = PAA(10)
+		dest = Vector{Float64}(undef, 10)
+		word_mutating = encode!(paa, dest, ts)
+		word_regular = encode(paa, ts)
+		@test word_mutating.data == word_regular.data
+		@test dest === word_mutating.data
+	end
+end
+
+@testset "ESAX multi-width" begin
+	ts = sin.(range(0, 4π, length = 100)) |> znormalize
+	esax = ESAX(10, 5)
+	word = encode(esax, ts)
+	@test width(word) == 3
+	@test length(word) == 10
+	@test eltype(values(word)) <: AbstractVector
+	@test length(first(values(word))) == 3
+end
+
+@testset "Error handling" begin
+	sax = SAX(10, 5)
+	@test_throws ArgumentError encode(sax, Float64[])  # empty vector
+	@test_throws ArgumentError encode(sax, randn(5))   # word size > input
+	dest = Vector{Int}(undef, 5)
+	@test_throws DimensionMismatch encode!(sax, dest, randn(100))  # wrong dest size
+end
+
+@testset "Approximator equality" begin
+	@test SAX(10, 5) == SAX(10, 5)
+	@test SAX(10, 5) != SAX(10, 6)
+	@test SAX(10, 5) != SAX(11, 5)
+	@test PAA(10) == PAA(10)
+	@test PAA(10) != PAA(11)
+	@test SAX(10, 5) != PAA(10)  # different types
+end
+
+@testset "Word accessors" begin
+	ts = sin.(range(0, 4π, length = 100)) |> znormalize
+	sax = SAX(10, 5)
+	word = encode(sax, ts)
+	@test length(word) == 10
+	@test size(word) == (10,)
+	@test word_size(word) == 10
+	@test alphabet_size(word) == 5
+	@test compression_rate(word) == 100 / 10
+	# iteration
+	chars = values(word)
+	@test length(chars) == 10
+	@test all(c -> c isa Char, chars)
+	# indexing
+	@test word[1] isa Char
+	@test word[end] == word[10]
+	@test lastindex(word) == 10
+end
+
+@testset "Segments function" begin
+	import SymbolicApproximators: segments
+	vals = collect(1:20)
+	segs = collect(segments(vals, 4))
+	@test length(segs) == 4
+	@test length(segs[1]) == 5
+	@test segs[1] == [1, 2, 3, 4, 5]
+	@test segs[4] == [16, 17, 18, 19, 20]
+	# with explicit lengths
+	segs = segments(vals, [5, 5, 5, 5])
+	@test length(collect(segs)) == 4
+	@test_throws ErrorException segments(vals, [5, 5, 5])  # wrong sum
+end
+
+@testset "Distance validation" begin
+	ts1 = randn(100) |> znormalize
+	ts2 = randn(100) |> znormalize
+	ts3 = randn(50) |> znormalize
+	sax1 = SAX(10, 5)
+	sax2 = SAX(10, 6)
+	word1 = encode(sax1, ts1)
+	word2 = encode(sax1, ts2)
+	word3 = encode(sax2, ts2)
+	word4 = encode(sax1, ts3)
+	@test mindist(word1, word2) isa Float64  # same approximator
+	@test_throws ArgumentError mindist(word1, word3)  # different approximators
+	@test_throws DimensionMismatch mindist(word1, word4)  # different original lengths
+end
+
+
+
