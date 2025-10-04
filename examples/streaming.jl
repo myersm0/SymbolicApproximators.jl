@@ -27,7 +27,7 @@ signal = Observable(Vector{Float64}(undef, window_len))
 words = Observable(Vector{Int}(undef, w))
 
 # visualization setup
-fig = Figure(resolution = (800, 400))
+fig = Figure(; size = (800, 400))
 ax1 = Axis(fig[1, 1], title = "Incoming signal")
 lineplot = lines!(ax1, 1:window_len, signal)
 

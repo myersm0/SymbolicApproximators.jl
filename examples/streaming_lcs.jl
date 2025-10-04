@@ -1,4 +1,18 @@
 
+# This demo streams random signal data, converts sliding windows (200 timepoints in length)
+# into lower-dimensional symbolic SAX representations (word size 20), and continually tracks 
+# and plots the longest repeated substring found so far.
+
+# As each new SAX word arrives, we process symbols one-by-one: if a symbol continues a pattern 
+# already seen in history, we extend the current match; otherwise, we saves the match to history 
+# (updating the best-found length if needed) and starts fresh.
+
+# The three plots will show: 
+# 1. the raw incoming signal
+# 2. the current SAX word as discrete symbols
+# 3. the longest repeated pattern discovered across the entire stream so far
+
+
 using SymbolicApproximators
 using StatsBase
 using DataStructures
@@ -10,7 +24,7 @@ w = 20
 a = 10
 window_len = 200
 
-fps = 10
+fps = 30
 Δt = 1 / fps
 
 sax = SAX(w, a)
@@ -22,7 +36,7 @@ current_word = Observable(Vector{Int}(undef, w))
 lcs_match = Observable(Int[])
 lcs_length = Observable(0)
 
-fig = Figure(resolution = (800, 600))
+fig = Figure(; size = (800, 600))
 
 ax1 = Axis(fig[1, 1], title = "Incoming signal")
 lines!(ax1, 1:window_len, signal)
@@ -45,12 +59,10 @@ Label(fig[3, 2], lift(x -> "Length: $x", lcs_length), tellheight = false)
 
 running = Ref(true)
 
-history = Int[]
-history_automaton = SuffixAutomaton(Int[])
+history = SuffixAutomaton(Int[])
 current_match = Int[]
 best_match = Int[]
 
-# this will take a minute to start running
 @async begin
 	t = 0.0
 	while running[]
@@ -62,7 +74,7 @@ best_match = Int[]
 			word_vec = collect(keys(word))
 			for symbol in word_vec
 				candidate = vcat(current_match, symbol)
-				if length(history) > 0 && occursin(candidate, history_automaton)
+				if length(history) > 0 && occursin(candidate, history)
 					push!(current_match, symbol)
 				else
 					if length(current_match) > length(best_match)
@@ -71,13 +83,11 @@ best_match = Int[]
 						lcs_length[] = length(best_match)
 					end
 					append!(history, current_match)
-					global history_automaton = SuffixAutomaton(history)
 					empty!(current_match)
-					if occursin([symbol], history_automaton)
+					if occursin([symbol], history)
 						push!(current_match, symbol)
 					else
 						push!(history, symbol)
-						global history_automaton = SuffixAutomaton(history)
 					end
 				end
 			end
@@ -90,3 +100,4 @@ best_match = Int[]
 end
 
 
+`
