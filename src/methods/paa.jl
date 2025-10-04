@@ -5,7 +5,7 @@ end
 
 PAA() = PAA(nothing)
 
-function _encode_segment(::PAA, values::AbstractVector{<:Real})
+function _encode_segment(::PAA, values::AbstractVector)
 	return mean(values)
 end
 

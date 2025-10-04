@@ -51,31 +51,16 @@ function encode(sa::SymbolicApproximator, values::AbstractVector)
 	return Word(sa, [_encode_segment(sa, seg) for seg in segs], n)
 end
 
-#function encode!(sa::SymbolicApproximator, dest::AbstractArray, values::AbstractVector)
-
-
-#dest = Matrix{Int}(undef, 1000, 10)
-#dest = zeros(Int, 10, 1000)
-#T = typeof(dest)
-#
-#n = length(normalized)
-#w = word_size(sa)
-#W = width(WordStyle(sa))
-#segs = segments(normalized, w)
-#
-#word = Word(
-#	sa, dest, 1:10, [_encode_segment(sa, seg) for seg in segs], n
-#)
-#
-#word = Word{typeof(sa), SubArray{T, 1, <:T}, W}(
-#	sa, [_encode_segment(sa, seg) for seg in segs], n
-#)
-
-
-
-
-
-
+function encode!(
+		sa::SymbolicApproximator, dest::C, values::AbstractVector
+	) where C <: AbstractArray
+	n = length(values)
+	w = word_size(sa)
+	segs = segments(values, w)
+	return Word(
+		sa, dest, [_encode_segment(sa, seg) for seg in segs], n
+	)
+end
 
 
 

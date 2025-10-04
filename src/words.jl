@@ -35,7 +35,17 @@ function Word(
 end
 
 function Word(
-		::MultiWord{W}, sa::SA, values::AbstractVector, n::Integer
+		::SimpleWord, sa::SA, dest::AbstractArray, values::AbstractVector, n::Integer
+	) where SA <: SymbolicApproximator
+	β = breakpoints(sa)
+	@inbounds @simd for i in eachindex(values)
+		dest[i] = searchsortedlast(β, Float64(values[i]))
+	end
+	return Word{SA, typeof(dest), 1}(Ref(sa), dest, n)
+end
+
+function Word(
+		::MultiWord{W}, sa::SA, values, n::Integer
 	) where {W, SA <: SymbolicApproximator}
 	β = breakpoints(sa)
 	indices = Vector{SVector{W, Int}}(undef, length(values))

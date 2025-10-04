@@ -10,7 +10,7 @@ function ESAX(w::Integer, a::Integer)
 	return ESAX(w, a, β)
 end
 
-function _encode_segment(sa::ESAX, values::AbstractVector{<:Real})
+function _encode_segment(sa::ESAX, values::AbstractVector)
 	# single pass to find min, max, and sum
 	min_value = values[1]
 	max_value = values[1]

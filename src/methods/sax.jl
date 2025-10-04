@@ -11,7 +11,7 @@ function SAX(w::Integer, a::Integer)
 	return SAX(w, a, β)
 end
 
-function _encode_segment(sax::SAX, values::AbstractVector{Float64})
+function _encode_segment(sax::SAX, values::AbstractVector)
 	return _encode_segment(PAA(), values)
 end
 
