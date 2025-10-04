@@ -19,11 +19,11 @@ function Base.isequal(sa1::SymbolicApproximator, sa2::SymbolicApproximator)
 end
 
 function Base.isequal(sa1::T, sa2::T) where T <: SymbolicApproximator
-	return word_size(sa1) == word_size(sa1) && alphabet_size(sa1) == alphabet_size(sa2)
+	return word_size(sa1) == word_size(sa2) && alphabet_size(sa1) == alphabet_size(sa2)
 end
 
 function Base.isequal(ca1::T, ca2::T) where T <: ContinuousApproximator
-	return word_size(ca1) == word_size(ca1)
+	return word_size(ca1) == word_size(ca2)
 end
 
 Base.:(==)(sa1::SymbolicApproximator, sa2::SymbolicApproximator) =
