@@ -30,6 +30,15 @@ function Word(
 end
 
 function Word(
+		::SimpleWord, ca::CA, dest::AbstractArray, values::AbstractVector, n::Integer
+	) where CA <: ContinuousApproximator
+	@inbounds @simd for i in eachindex(values)
+		dest[i] = Float64(values[i])
+	end
+	return Word{CA, typeof(dest), 1}(Ref(ca), dest, n)
+end
+
+function Word(
 		::SimpleWord, sa::SA, dest::AbstractArray, values::AbstractVector, n::Integer
 	) where SA <: SymbolicApproximator
 	β = breakpoints(sa)

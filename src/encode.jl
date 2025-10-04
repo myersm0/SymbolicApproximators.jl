@@ -47,35 +47,24 @@ determine the algorithm and parameters for doing so.
 Returns a `Word`.
 """
 function encode(a::AbstractApproximator, values::AbstractVector)
+	isempty(values) && throw(ArgumentError("cannot encode empty vector"))
 	n = length(values)
 	w = word_size(a)
+	w <= n || throw(ArgumentError("word size $w exceeds input length $n"))
 	segs = segments(values, w)
 	return Word(a, [_encode_segment(a, seg) for seg in segs], n)
 end
 
 function encode!(
-		a::ContinuousApproximator, dest::C, values::AbstractVector
+		a::AbstractApproximator, dest::C, values::AbstractVector
 	) where C <: AbstractArray
+	isempty(values) && throw(ArgumentError("cannot encode empty vector"))
 	n = length(values)
 	w = word_size(a)
+	w <= n || throw(ArgumentError("word size $w exceeds input length $n"))
+	length(dest) == w || throw(DimensionMismatch("dest length $(length(dest)) != word size $w"))
 	segs = segments(values, w)
-	for (i, seg) in enumerate(segs)
-		dest[i] = _encode_segment(a, seg)
-	end
-	return Word{typeof(a), C, 1}(Ref(a), dest, n)
-end
-
-function encode!(
-		a::SymbolicApproximator, dest::C, values::AbstractVector
-	) where C <: AbstractArray
-	n = length(values)
-	w = word_size(a)
-	segs = segments(values, w)
-	# use dest as temporary storage for means, will be overwritten with indices
-	for (i, seg) in enumerate(segs)
-		dest[i] = _encode_segment(a, seg)
-	end
-	return Word(SimpleWord(), a, dest, dest, n)
+	return Word(a, dest, [_encode_segment(a, seg) for seg in segs], n)
 end
 
 approximate(args...) = encode(args...)
