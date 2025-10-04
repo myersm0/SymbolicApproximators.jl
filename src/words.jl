@@ -25,13 +25,8 @@ end
 function Word(
 		::SimpleWord, sa::SA, values::AbstractVector, n::Integer
 	) where SA <: SymbolicApproximator
-	β = breakpoints(sa)
-	indices = Vector{Int}(undef, length(values))
-	@inbounds @simd for i in eachindex(values)
-		v = Float64(values[i])
-		indices[i] = searchsortedlast(β, v)
-	end
-	return Word{SA, Vector{Int}, 1}(Ref(sa), indices, n)
+	dest = Vector{Int}(undef, length(values))
+	return Word(SimpleWord(), sa, dest, values, n)
 end
 
 function Word(
@@ -47,12 +42,18 @@ end
 function Word(
 		::MultiWord{W}, sa::SA, values, n::Integer
 	) where {W, SA <: SymbolicApproximator}
+	dest = Vector{SVector{W, Int}}(undef, length(values))
+	return Word(MultiWord{W}(), sa, dest, values, n)
+end
+
+function Word(
+		::MultiWord{W}, sa::SA, dest::AbstractArray, values, n::Integer
+	) where {W, SA <: SymbolicApproximator}
 	β = breakpoints(sa)
-	indices = Vector{SVector{W, Int}}(undef, length(values))
 	for (i, v) in enumerate(values)
-		indices[i] = SVector{W, Int}(searchsortedlast(β, vi) for vi in v)
+		dest[i] = SVector{W, Int}(searchsortedlast(β, vi) for vi in v)
 	end
-	return Word{SA, Vector{SVector{W, Int}}, W}(Ref(sa), indices, n)
+	return Word{SA, typeof(dest), W}(Ref(sa), dest, n)
 end
 
 WordStyle(w::Word{A, T, 1}) where {A, T} = SimpleWord()
