@@ -36,31 +36,37 @@ function segments(values::AbstractVector, segment_lengths::Vector{Int})
 	end
 end
 
-function encode(ca::ContinuousApproximator, values::AbstractVector)
-	n = length(values)
-	w = word_size(ca)
-	segs = segments(values, w)
-	return Word(ca, [_encode_segment(ca, seg) for seg in segs], n)
-end
+"""
+    encode(approximator, values)
 
-function encode(sa::SymbolicApproximator, values::AbstractVector)
+Turn continuous `values` into a lower-dimensional approximation.
+
+The configuration defined in `approximator::AbstractApproximator` will
+determine the algorithm and parameters for doing so.
+
+Returns a `Word`.
+"""
+function encode(a::AbstractApproximator, values::AbstractVector)
 	n = length(values)
-	w = word_size(sa)
-	W = width(WordStyle(sa))
+	w = word_size(a)
 	segs = segments(values, w)
-	return Word(sa, [_encode_segment(sa, seg) for seg in segs], n)
+	return Word(a, [_encode_segment(a, seg) for seg in segs], n)
 end
 
 function encode!(
-		sa::SymbolicApproximator, dest::C, values::AbstractVector
+		a::AbstractApproximator, dest::C, values::AbstractVector
 	) where C <: AbstractArray
 	n = length(values)
 	w = word_size(sa)
 	segs = segments(values, w)
 	return Word(
-		sa, dest, [_encode_segment(sa, seg) for seg in segs], n
+		a, dest, [_encode_segment(a, seg) for seg in segs], n
 	)
 end
+
+approximate(args...) = encode(args...)
+
+approximate!(args...) = encode!(args...)
 
 
 

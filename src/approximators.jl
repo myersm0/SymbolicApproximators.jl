@@ -14,20 +14,3 @@ breakpoints(sa::SymbolicApproximator) = sa.β
 cardinality(sa::SymbolicApproximator) = sa.a
 alphabet_size(sa::SymbolicApproximator) = cardinality(sa)
 
-"""
-    encode(approximator, values)
-
-Approximate continuous `values` in lower-dimensional representation.
-
-The configuration defined in `approximator::AbstractApproximator` will
-determine the algorithm and parameters for doing so.
-
-Returns a `Word`.
-"""
-function encode(::AbstractApproximator, values::AbstractVector) end
-
-approximate(sa::AbstractApproximator, values) = encode(sa, values)
-
-
-
-
