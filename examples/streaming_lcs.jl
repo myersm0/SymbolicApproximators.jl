@@ -5,11 +5,11 @@
 
 # As each new SAX word arrives, we process symbols one-by-one: if a symbol continues a pattern 
 # already seen in history, we extend the current match; otherwise, we saves the match to history 
-# (updating the best-found length if needed) and starts fresh.
+# (updating the best-found length so far if needed) and start fresh.
 
-# The three plots will show: 
+# The three figure panels will show, from top to bottom: 
 # 1. the raw incoming signal
-# 2. the current SAX word as discrete symbols
+# 2. the current SAX word (symbolic approximation of the signal)
 # 3. the longest repeated pattern discovered across the entire stream so far
 
 
