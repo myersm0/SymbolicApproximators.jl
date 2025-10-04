@@ -58,7 +58,7 @@ function Distances.evaluate(
 	return sqrt(total) * sqrt(compression_rate(word1))
 end
 
-function symbol_distance(approximator::Union{SAX, ESAX}, i::Int, j::Int)
+function symbol_distance(approximator::SAX, i::Int, j::Int)
 	β = breakpoints(approximator)
 	if abs(i - j) <= 1
        return 0.0
@@ -72,5 +72,21 @@ function symbol_distance(approximator::Union{SAX, ESAX}, i::Int, j::Int)
 	j = clamp(j, lo:hi)
    return β[j] - β[i+1]
 end
+
+function symbol_distance(approximator::ESAX, i::Int, j::Int)
+	β = breakpoints(approximator)
+	if abs(i - j) <= 1
+       return 0.0
+   end
+	if i > j
+		i, j = j, i
+	end
+	lo = 0
+	hi = length(β)
+	i = clamp(i, lo:hi)
+	j = clamp(j, lo:hi)
+   return β[j] - β[i+1]
+end
+
 
 
