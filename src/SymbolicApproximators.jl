@@ -14,7 +14,7 @@ include("words.jl")
 export Word, width, compression_rate
 
 include("encode.jl")
-export encode
+export encode, encode!
 
 include("methods/paa.jl")
 include("methods/sax.jl")
