@@ -5,7 +5,7 @@ using DataStructures
 using Observables
 using GLMakie
 
-w = 10             # word size
+w = 50             # word size
 a = 5              # alphabet size
 window_len = 200   # length of time series subsequeences
 
@@ -15,7 +15,7 @@ fps = 30
 
 sax = SAX(w, a)
 
-# allocate a buffer for input accumulation
+# pre-allocate a buffer for input accumulation
 buf = CircularBuffer{Float64}(window_len)
 
 # pre-allocate a vector to store SAX words,
@@ -30,35 +30,37 @@ words = Observable(Vector{Int}(undef, w))
 fig = Figure(resolution = (800, 400))
 ax1 = Axis(fig[1, 1], title = "Incoming signal")
 lineplot = lines!(ax1, 1:window_len, signal)
+
 ax2 = Axis(
 	fig[2, 1], 
-	title = "Current SAX word (symbol indices)", 
-	limits = (1, w, 0, a + 1)
+	title = "Current SAX word"
 )
+limits!(ax2, 1, w, -1, a)
+ax2.yticks = (0:(a - 1), ["a", "b", "c", "d", "e"])
+scatterplot = scatter!(ax2, 1:w, words)
 
-barplot = barplot!(ax2, 1:w, words)
-display(fig)
+running = Ref(true)
 
 @async begin
 	t = 0.0
-	while true
+	while running[]
 		# simulate new sample
 		new_val = sin(t) + 0.1randn() # noisy sine wave
 		push!(buf, new_val)
 		if length(buf) == window_len
 			# normalize
-			normed = (buf .- mean(buf)) ./ std(buf, corrected=false)
+			normed = (buf .- mean(buf)) ./ std(buf, corrected = false)
 			# encode into preallocated vector (mutating)
-			w = encode!(sax, dest, normed)
+			word = encode!(sax, dest, normed)
 			# update observables
-			signal[] = copy(buf)		  # make a safe copy for plotting
-			words[] = copy(keys(w))	  # make a safe copy (ephemeral)
+			signal[] = copy(buf)         # make a safe copy for plotting
+			words[] = copy(keys(word))	  # make a safe copy (ephemeral)
 		end
 		sleep(1 / fps)
 		t += 0.1
 	end
 end
 
-
+# use `running[] = false` to stop the visualization
 
 
