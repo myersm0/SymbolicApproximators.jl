@@ -14,3 +14,20 @@ breakpoints(sa::SymbolicApproximator) = sa.β
 cardinality(sa::SymbolicApproximator) = sa.a
 alphabet_size(sa::SymbolicApproximator) = cardinality(sa)
 
+function Base.isequal(sa1::SymbolicApproximator, sa2::SymbolicApproximator)
+	return false
+end
+
+function Base.isequal(sa1::T, sa2::T) where T <: SymbolicApproximator
+	return word_size(sa1) == word_size(sa1) && alphabet_size(sa1) == alphabet_size(sa2)
+end
+
+function Base.isequal(ca1::T, ca2::T) where T <: ContinuousApproximator
+	return word_size(ca1) == word_size(ca1)
+end
+
+Base.:(==)(sa1::SymbolicApproximator, sa2::SymbolicApproximator) =
+	isequal(sa1, sa2)
+
+
+
