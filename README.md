@@ -17,7 +17,6 @@ The following algorithms are implemented or under development:
 Note that the first one, PAA, is actually a continuous rather than a symbolic representation, but we include it in the package because all the SAX variants depend on it.
 
 Coming soon there will be additional functionality such as:
-- rolling window/segment functions to enable operations on streaming data
 - other functions depending on algorithm, such as numerosity reduction and permutation entropy
 
 ## Installation
@@ -130,6 +129,19 @@ mindist(word1, word2)             # 13.9
 
 The MINDIST between two SAX or PAA words lower-bounds the true Euclidian distance, and will closely approach that distance (at reduced representational cost) as we increase
 the paramaters for word size and/or alphabet size. The example file [convergence.jl](https://github.com/myersm0/SymbolicApproximators.jl/blob/main/examples/convergence.jl) in this repo demonstates that.
+
+### Advanced usage for streaming
+For streaming or real-time processing applications, you can use the new mutating `encode!()` function to avoid allocations by reusing a pre-allocated destination array:
+```julia
+sax = SAX(50, 5)
+dest = Matrix{Int}(undef, 50, 2)
+word1 = encode!(sax, dest[:, 1], normalized)  # encoded output will be stored in `dest`
+word2 = encode!(sax, dest[:, 2], normalized)  # as above
+```
+
+The contents of `word1` and `word2` above will both be _views_ into the destination array. This pattern may reduce allocations and improve memory contiguity. Depending on your use case, you may not even need the `Word` structs themselves, and the `dest` matrix may have all you need.
+
+See [streaming_basic.jl](https://github.com/myersm0/SymbolicApproximators.jl/blob/main/examples/streaming_basic.jl) for a complete example with real-time visualization, and [streaming_lcs.jl](https://github.com/myersm0/SymbolicApproximators.jl/blob/main/examples/streaming_lcs.jl) for finding repeated patterns in streaming SAX words.
 
 ## License
 
