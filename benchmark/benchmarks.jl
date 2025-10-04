@@ -37,10 +37,12 @@ SUITE["SAX distance"] = @benchmarkable mindist($symbols, $symbols2)
 # 225 ns, 1906 ns, 94 ns
 model = ESAX(50, 25)
 symbols = encode(model, signal)
+symbols2 = encode(model, reverse(signal))
 vals = values(symbols)
 SUITE["ESAX config"] = @benchmarkable ESAX(50, 25)
 SUITE["ESAX encode"] = @benchmarkable encode($model, $signal)
 SUITE["ESAX values"] = @benchmarkable values($symbols)
+SUITE["ESAX distance"] = @benchmarkable mindist($symbols, $symbols2)
 
 run(SUITE)
 

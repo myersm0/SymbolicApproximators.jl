@@ -40,12 +40,20 @@ function Distances.evaluate(
 end
 
 function Distances.evaluate(
-		dist::MinDist, word1::Word{SA, T, W}, word2::Word{SA, T, 1}
+		dist::MinDist, word1::Word{SA, T, W}, word2::Word{SA, T, W}
 	) where {SA <: SymbolicApproximator, T, W}
-	error("Distance function not yet implemented for MultiWords")
+	keys1 = reinterpret(Int, keys(word1))
+	keys2 = reinterpret(Int, keys(word2))
+	approximator = word1.approximator[]
+	total = 0.0
+	for (i, j) in zip(keys1, keys2)
+		d = symbol_distance(approximator, i, j)
+		total += d^2
+	end
+	return sqrt(total) * sqrt(compression_rate(word1))
 end
 
-function symbol_distance(approximator::SAX, i::Int, j::Int)
+function symbol_distance(approximator::Union{SAX, ESAX}, i::Int, j::Int)
 	β = breakpoints(approximator)
 	if abs(i - j) <= 1
        return 0.0
