@@ -57,7 +57,7 @@ function encode!(
 		a::AbstractApproximator, dest::C, values::AbstractVector
 	) where C <: AbstractArray
 	n = length(values)
-	w = word_size(sa)
+	w = word_size(a)
 	segs = segments(values, w)
 	return Word(
 		a, dest, [_encode_segment(a, seg) for seg in segs], n
