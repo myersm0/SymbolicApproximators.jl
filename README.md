@@ -133,13 +133,26 @@ the paramaters for word size and/or alphabet size. The example file [convergence
 ### Advanced usage for streaming
 For streaming or real-time processing applications, you can use the new mutating `encode!()` function to avoid allocations by reusing a pre-allocated destination array:
 ```julia
-sax = SAX(50, 5)
-dest = Matrix{Int}(undef, 50, 2)
-word1 = encode!(sax, dest[:, 1], normalized)  # encoded output will be stored in `dest`
-word2 = encode!(sax, dest[:, 2], normalized)  # as above
+using SymbolicApproximators
+using StatsBase
+import SymbolicApproximators: windows
+
+signal = randn(1000)
+subsequences = windows(signal, 100)  # generate sliding windows of size 100
+
+# define a preprocessing function; in practice this might be more complex
+znormalize(x) = (x .- mean(x)) ./ std(x)
+
+sax = SAX(10, 5)
+n_words = length(subsequences)
+dest = Matrix{Int}(undef, 10, n_words)
+words = [
+    encode!(sax, view(dest, :, i), znormalize(subseq))
+    for (i, subseq) in enumerate(subsequences)
+]
 ```
 
-The contents of `word1` and `word2` above will both be _views_ into the destination array. This pattern may reduce allocations and improve memory contiguity. Depending on your use case, you may not even need the `Word` structs themselves, and the `dest` matrix may have all you need.
+The contents of each word above will be a _view_ into the respective column of the destination array. This pattern may reduce allocations and improve memory contiguity. Depending on your use case, you may not even need the `Word` structs themselves, and the `dest` matrix may have all you need. (Specifically, it will contain the (_zero-based_) integer indices into the symbolic alphabet.)
 
 See [streaming_basic.jl](https://github.com/myersm0/SymbolicApproximators.jl/blob/main/examples/streaming_basic.jl) for a complete example with real-time visualization, and [streaming_lcs.jl](https://github.com/myersm0/SymbolicApproximators.jl/blob/main/examples/streaming_lcs.jl) for finding repeated patterns in streaming SAX words.
 
